@@ -1,0 +1,2566 @@
+
+<!doctype html>
+<html lang="pt" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Workshop de DQL (Dynatrace Query Language) para parceiros — fundamentos, agregação e conceitos avançados">
+      
+      
+        <meta name="author" content="Dynatrace Partner Enablement">
+      
+      
+        <link rel="canonical" href="https://alan-delcaro.github.io/workshop-dql-parceiros/modulos/02-dql200-agregacao/">
+      
+      
+        <link rel="prev" href="../01-dql100-fundamentos/">
+      
+      
+        <link rel="next" href="../03-dql300-avancado/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>DQL 200 — Agregação - DQL para Parceiros Dynatrace</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="cyan">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#modulo-02-dql-200-agregacao-selecao-e-parsing" class="md-skip">
+          Pular para conteúdo
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Cabeçalho">
+    <a href="../.." title="DQL para Parceiros Dynatrace" class="md-header__button md-logo" aria-label="DQL para Parceiros Dynatrace" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            DQL para Parceiros Dynatrace
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DQL 200 — Agregação
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Modo claro"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Modo claro" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="teal" data-md-color-accent="cyan"  aria-label="Modo escuro"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Modo escuro" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Buscar" placeholder="Buscar" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Pesquisar">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Compartilhar" aria-label="Compartilhar" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Limpar" aria-label="Limpar" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Inicializando busca
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alan-delcaro/workshop-dql-parceiros" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    workshop-dql-parceiros
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Abas" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../AGENDA/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Agenda
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../00-introducao/" class="md-tabs__link">
+          
+  
+  
+  Módulos
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../labs/" class="md-tabs__link">
+          
+  
+  
+  Labs (Hands-on)
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../solucoes/lab-01-solucoes/" class="md-tabs__link">
+          
+  
+  
+  Gabaritos
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navegação" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="DQL para Parceiros Dynatrace" class="md-nav__button md-logo" aria-label="DQL para Parceiros Dynatrace" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    DQL para Parceiros Dynatrace
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alan-delcaro/workshop-dql-parceiros" title="Ir para repositório" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    workshop-dql-parceiros
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../AGENDA/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Agenda
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Módulos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Módulos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../00-introducao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introdução ao Grail e DQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01-dql100-fundamentos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DQL 100 — Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DQL 200 — Agregação
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DQL 200 — Agregação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="Nesta página">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Nesta página
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-o-comando-summarize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. O Comando summarize
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. O Comando summarize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sintaxe-basica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sintaxe básica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-agrupamento-by" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com agrupamento (by:)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiplas-metricas-em-um-unico-summarize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Múltiplas métricas em um único summarize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#funcoes-de-agregacao-disponiveis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Funções de agregação disponíveis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-error-rate-por-servico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo: Error rate por serviço
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-o-comando-maketimeseries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. O Comando makeTimeseries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. O Comando makeTimeseries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#diferenca-em-relacao-ao-timeseries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diferença em relação ao timeseries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sintaxe-basica_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sintaxe básica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-agrupamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com agrupamento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-diferentes-agregacoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com diferentes agregações
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-o-comando-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. O Comando fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. O Comando fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#selecionar-campos-especificos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selecionar campos específicos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renomear-campos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Renomear campos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adicionar-campos-calculados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adicionar campos calculados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remover-campos-prefixo-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remover campos (prefixo -)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fieldssummary-analise-exploratoria-de-campos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fieldsSummary — análise exploratória de campos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-o-comando-expand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. O Comando expand
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. O Comando expand">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cenario-tipico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cenário típico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-expand-e-alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com expand e alias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#funcoes-de-array-sem-expand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Funções de array (sem expand)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-o-comando-parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. O Comando parse
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. O Comando parse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-usar-parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por que usar parse?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#padroes-grok-os-mais-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Padrões GROK — os mais comuns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sintaxe-basica_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sintaxe básica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-completo-parsing-de-log-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo completo — parsing de log HTTP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parsing-de-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing de JSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parsing-de-chavevalor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing de chave=valor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parse-como-funcao-inline-em-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse como função inline em fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-ordenacao-com-sort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Ordenação com sort
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-exemplos-integrados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Exemplos Integrados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Exemplos Integrados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-1-dashboard-de-saude-erros-por-servico-ultimas-4h" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 1: Dashboard de saúde — erros por serviço (últimas 4h)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-2-tendencia-de-erros-por-minuto-grafico-de-linha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 2: Tendência de erros por minuto (gráfico de linha)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-3-analise-de-latencia-de-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 3: Análise de latência de endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-4-analise-exploratoria-de-campos-desconhecidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 4: Análise exploratória de campos desconhecidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumo-dql-200" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumo DQL 200
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximo-modulo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Próximo Módulo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03-dql300-avancado/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    DQL 300 — Avançado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../04-casos-de-uso/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Casos de Uso Práticos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Labs (Hands-on)
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Labs (Hands-on)
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../labs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Guia dos Labs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../labs/lab-01-fundamentos/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 01 — Fundamentos
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../labs/lab-02-agregacao/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 02 — Agregação
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../labs/lab-03-avancado/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Lab 03 — Avançado
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Gabaritos
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Gabaritos
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../solucoes/lab-01-solucoes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Soluções Lab 01
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../solucoes/lab-02-solucoes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Soluções Lab 02
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../solucoes/lab-03-solucoes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Soluções Lab 03
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="Nesta página">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Nesta página
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-o-comando-summarize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. O Comando summarize
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. O Comando summarize">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#sintaxe-basica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sintaxe básica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-agrupamento-by" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com agrupamento (by:)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiplas-metricas-em-um-unico-summarize" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Múltiplas métricas em um único summarize
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#funcoes-de-agregacao-disponiveis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Funções de agregação disponíveis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-error-rate-por-servico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo: Error rate por serviço
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-o-comando-maketimeseries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. O Comando makeTimeseries
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. O Comando makeTimeseries">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#diferenca-em-relacao-ao-timeseries" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diferença em relação ao timeseries
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sintaxe-basica_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sintaxe básica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-agrupamento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com agrupamento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-diferentes-agregacoes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com diferentes agregações
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-o-comando-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. O Comando fields
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. O Comando fields">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#selecionar-campos-especificos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Selecionar campos específicos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#renomear-campos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Renomear campos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#adicionar-campos-calculados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Adicionar campos calculados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#remover-campos-prefixo-" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remover campos (prefixo -)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#fieldssummary-analise-exploratoria-de-campos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        fieldsSummary — análise exploratória de campos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-o-comando-expand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. O Comando expand
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. O Comando expand">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cenario-tipico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cenário típico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#com-expand-e-alias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Com expand e alias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#funcoes-de-array-sem-expand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Funções de array (sem expand)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-o-comando-parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. O Comando parse
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. O Comando parse">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#por-que-usar-parse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por que usar parse?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#padroes-grok-os-mais-comuns" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Padrões GROK — os mais comuns
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sintaxe-basica_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sintaxe básica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-completo-parsing-de-log-http" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo completo — parsing de log HTTP
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parsing-de-json" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing de JSON
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parsing-de-chavevalor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parsing de chave=valor
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#parse-como-funcao-inline-em-fields" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        parse como função inline em fields
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-ordenacao-com-sort" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Ordenação com sort
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-exemplos-integrados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Exemplos Integrados
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="7. Exemplos Integrados">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-1-dashboard-de-saude-erros-por-servico-ultimas-4h" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 1: Dashboard de saúde — erros por serviço (últimas 4h)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-2-tendencia-de-erros-por-minuto-grafico-de-linha" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 2: Tendência de erros por minuto (gráfico de linha)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-3-analise-de-latencia-de-endpoint" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 3: Análise de latência de endpoint
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exemplo-4-analise-exploratoria-de-campos-desconhecidos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exemplo 4: Análise exploratória de campos desconhecidos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumo-dql-200" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumo DQL 200
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximo-modulo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Próximo Módulo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="modulo-02-dql-200-agregacao-selecao-e-parsing">Módulo 02 — DQL 200: Agregação, Seleção e Parsing<a class="headerlink" href="#modulo-02-dql-200-agregacao-selecao-e-parsing" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p><strong>Duração:</strong> ~25 minutos<br />
+<strong>Objetivo:</strong> Transformar dados brutos em insights — agregar, selecionar campos e extrair estrutura de texto livre</p>
+</blockquote>
+<hr />
+<h2 id="1-o-comando-summarize">1. O Comando <code>summarize</code><a class="headerlink" href="#1-o-comando-summarize" title="Permanent link">&para;</a></h2>
+<p>O <code>summarize</code> <strong>agrega</strong> os registros, análogo ao <code>GROUP BY</code> + funções de agregação do SQL. Ele reduz N linhas a um conjunto menor de resultados.</p>
+<h3 id="sintaxe-basica">Sintaxe básica<a class="headerlink" href="#sintaxe-basica" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>| summarize count = count()
+</span></code></pre></div>
+<h3 id="com-agrupamento-by">Com agrupamento (<code>by:</code>)<a class="headerlink" href="#com-agrupamento-by" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>// Contagem de logs por nível, agrupados
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>fetch logs, from: now() - 1h
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>| summarize count = count(), by: {loglevel}
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>// Agrupamento por múltiplos campos
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>fetch logs, from: now() - 1h
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a>| summarize count = count(), by: {loglevel, dt.entity.service}
+</span></code></pre></div>
+<h3 id="multiplas-metricas-em-um-unico-summarize">Múltiplas métricas em um único <code>summarize</code><a class="headerlink" href="#multiplas-metricas-em-um-unico-summarize" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>| filter isNotNull(duration)
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>| summarize
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a>    total      = count(),
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a>    avg_dur    = avg(duration),
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a>    max_dur    = max(duration),
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a>    p95_dur    = percentile(duration, 95),
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a>    by: {dt.entity.service}
+</span></code></pre></div>
+<h3 id="funcoes-de-agregacao-disponiveis">Funções de agregação disponíveis<a class="headerlink" href="#funcoes-de-agregacao-disponiveis" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Função</th>
+<th>Descrição</th>
+<th>Exemplo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>count()</code></td>
+<td>Total de registros</td>
+<td><code>count()</code></td>
+</tr>
+<tr>
+<td><code>countDistinct(campo)</code></td>
+<td>Valores únicos</td>
+<td><code>countDistinct(user.id)</code></td>
+</tr>
+<tr>
+<td><code>countIf(condição)</code></td>
+<td>Registros que satisfazem condição</td>
+<td><code>countIf(loglevel == "ERROR")</code></td>
+</tr>
+<tr>
+<td><code>avg(campo)</code></td>
+<td>Média</td>
+<td><code>avg(duration)</code></td>
+</tr>
+<tr>
+<td><code>sum(campo)</code></td>
+<td>Soma</td>
+<td><code>sum(bytes_sent)</code></td>
+</tr>
+<tr>
+<td><code>min(campo)</code></td>
+<td>Mínimo</td>
+<td><code>min(response_time)</code></td>
+</tr>
+<tr>
+<td><code>max(campo)</code></td>
+<td>Máximo</td>
+<td><code>max(response_time)</code></td>
+</tr>
+<tr>
+<td><code>percentile(campo, P)</code></td>
+<td>Percentil</td>
+<td><code>percentile(latency, 99)</code></td>
+</tr>
+<tr>
+<td><code>collectDistinct(campo)</code></td>
+<td>Lista de valores únicos</td>
+<td><code>collectDistinct(error_code)</code></td>
+</tr>
+<tr>
+<td><code>takeLast(campo)</code></td>
+<td>Último valor</td>
+<td><code>takeLast(status)</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="exemplo-error-rate-por-servico">Exemplo: Error rate por serviço<a class="headerlink" href="#exemplo-error-rate-por-servico" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>| filter isNotNull(dt.entity.service)
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>| summarize
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>    total   = count(),
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>    errors  = countIf(loglevel == &quot;ERROR&quot;),
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>    by: {dt.entity.service}
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>| fields dt.entity.service, total, errors,
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>         error_rate = round(errors / total * 100, 2)
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>| sort error_rate, direction: &quot;descending&quot;
+</span></code></pre></div>
+<hr />
+<h2 id="2-o-comando-maketimeseries">2. O Comando <code>makeTimeseries</code><a class="headerlink" href="#2-o-comando-maketimeseries" title="Permanent link">&para;</a></h2>
+<p>O <code>makeTimeseries</code> cria uma <strong>série temporal a partir de qualquer record source</strong> — não apenas métricas. É ideal para visualizar tendências de logs ou eventos ao longo do tempo.</p>
+<h3 id="diferenca-em-relacao-ao-timeseries">Diferença em relação ao <code>timeseries</code><a class="headerlink" href="#diferenca-em-relacao-ao-timeseries" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th><code>timeseries</code></th>
+<th><code>makeTimeseries</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fonte dos dados</td>
+<td>Apenas métricas (dt.host.*, etc.)</td>
+<td>Qualquer record source</td>
+</tr>
+<tr>
+<td>Usa <code>fetch</code>?</td>
+<td>Não (comando standalone)</td>
+<td>Sim (precedido de <code>fetch</code>)</td>
+</tr>
+<tr>
+<td>Ideal para</td>
+<td>CPU, memória, métricas OOTB</td>
+<td>Contagem de erros, logs, bizevents</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sintaxe-basica_1">Sintaxe básica<a class="headerlink" href="#sintaxe-basica_1" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>fetch logs, from: now() - 2h
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>| filter loglevel == &quot;ERROR&quot;
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>| makeTimeseries count = count(), interval: 5m
+</span></code></pre></div>
+<h3 id="com-agrupamento">Com agrupamento<a class="headerlink" href="#com-agrupamento" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>// Uma série de erro por serviço, buckets de 10 minutos
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>fetch logs, from: now() - 2h
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a>| filter loglevel == &quot;ERROR&quot;
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>| makeTimeseries error_count = count(),
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    interval: 10m,
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>    by: {dt.entity.service}
+</span></code></pre></div>
+<h3 id="com-diferentes-agregacoes">Com diferentes agregações<a class="headerlink" href="#com-diferentes-agregacoes" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>// Latência média de spans ao longo do tempo
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>fetch spans, from: now() - 1h
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a>| filter isNotNull(duration)
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>| makeTimeseries {
+</span><span id="__span-7-5"><a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a>    avg_latency = avg(duration),
+</span><span id="__span-7-6"><a id="__codelineno-7-6" name="__codelineno-7-6" href="#__codelineno-7-6"></a>    p99_latency = percentile(duration, 99)
+</span><span id="__span-7-7"><a id="__codelineno-7-7" name="__codelineno-7-7" href="#__codelineno-7-7"></a>  },
+</span><span id="__span-7-8"><a id="__codelineno-7-8" name="__codelineno-7-8" href="#__codelineno-7-8"></a>    interval: 5m,
+</span><span id="__span-7-9"><a id="__codelineno-7-9" name="__codelineno-7-9" href="#__codelineno-7-9"></a>    by: {dt.entity.service}
+</span></code></pre></div>
+<hr />
+<h2 id="3-o-comando-fields">3. O Comando <code>fields</code><a class="headerlink" href="#3-o-comando-fields" title="Permanent link">&para;</a></h2>
+<p>O <code>fields</code> controla <strong>quais campos</strong> aparecem no resultado e permite criar campos calculados. Equivale ao <code>SELECT</code> do SQL.</p>
+<h3 id="selecionar-campos-especificos">Selecionar campos específicos<a class="headerlink" href="#selecionar-campos-especificos" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>| filter loglevel == &quot;ERROR&quot;
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>| fields timestamp, loglevel, content, dt.entity.service
+</span></code></pre></div>
+<h3 id="renomear-campos">Renomear campos<a class="headerlink" href="#renomear-campos" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>| fields
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>    ts       = timestamp,
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>    level    = loglevel,
+</span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>    message  = content,
+</span><span id="__span-9-6"><a id="__codelineno-9-6" name="__codelineno-9-6" href="#__codelineno-9-6"></a>    service  = dt.entity.service
+</span></code></pre></div>
+<h3 id="adicionar-campos-calculados">Adicionar campos calculados<a class="headerlink" href="#adicionar-campos-calculados" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>| filter isNotNull(duration)
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>| fields
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a>    timestamp,
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a>    content,
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>    duration_sec = duration / 1000.0,   // converte ms para segundos
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a>    is_slow      = duration &gt; 5000       // flag booleana
+</span></code></pre></div>
+<h3 id="remover-campos-prefixo-">Remover campos (prefixo <code>-</code>)<a class="headerlink" href="#remover-campos-prefixo-" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>| fields -trace_id, -span_id, -aws.region   // remove campos desnecessários
+</span></code></pre></div>
+<h3 id="fieldssummary-analise-exploratoria-de-campos"><code>fieldsSummary</code> — análise exploratória de campos<a class="headerlink" href="#fieldssummary-analise-exploratoria-de-campos" title="Permanent link">&para;</a></h3>
+<p>Muito útil para entender quais campos existem em um log source desconhecido:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-12-2"><a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a>| filter loglevel == &quot;ERROR&quot;
+</span><span id="__span-12-3"><a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a>| fieldsSummary
+</span></code></pre></div>
+<p>Retorna uma tabela com nome dos campos, tipo, contagem de valores não-nulos e exemplos de valores. <strong>Ótimo para explorar dados novos.</strong></p>
+<hr />
+<h2 id="4-o-comando-expand">4. O Comando <code>expand</code><a class="headerlink" href="#4-o-comando-expand" title="Permanent link">&para;</a></h2>
+<p>O <code>expand</code> "explode" um campo que contém um <strong>array</strong> em múltiplos registros — um por elemento do array.</p>
+<h3 id="cenario-tipico">Cenário típico<a class="headerlink" href="#cenario-tipico" title="Permanent link">&para;</a></h3>
+<p>Quando logs ou eventos têm um campo de lista (ex: <code>tags</code>, <code>errors</code>, <code>items</code>):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>// Supondo que o campo &quot;tags&quot; é um array de strings
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>fetch dt.entity.service
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>| expand tags
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a>| summarize count = count(), by: {tags}
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a>| sort count, direction: &quot;descending&quot;
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a>| limit 20
+</span></code></pre></div>
+<h3 id="com-expand-e-alias">Com <code>expand</code> e alias<a class="headerlink" href="#com-expand-e-alias" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>fetch bizevents, from: now() - 1h
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>| expand item = cart.items      // cada item do carrinho vira uma linha
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>| summarize
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a>    total_vendido = sum(item.price),
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a>    qtd_vendida   = count(),
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a>    by: {item.category}
+</span></code></pre></div>
+<h3 id="funcoes-de-array-sem-expand">Funções de array (sem expand)<a class="headerlink" href="#funcoes-de-array-sem-expand" title="Permanent link">&para;</a></h3>
+<p>Ao invés de expandir, às vezes você quer inspecionar o array diretamente:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>| filter arraySize(tags) &gt; 0                    // apenas registros com tags
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>| filter arrayContains(tags, &quot;critical&quot;)        // tem a tag &quot;critical&quot;
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a>| fields timestamp, content, tags,
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a>         num_tags = arraySize(tags),
+</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a>         tags_str = arrayJoin(tags, &quot;, &quot;)       // converte array em string
+</span></code></pre></div>
+<hr />
+<h2 id="5-o-comando-parse">5. O Comando <code>parse</code><a class="headerlink" href="#5-o-comando-parse" title="Permanent link">&para;</a></h2>
+<p>O <code>parse</code> extrai <strong>campos estruturados</strong> de um campo de texto livre usando padrões. É o coração da análise de logs.</p>
+<h3 id="por-que-usar-parse">Por que usar <code>parse</code>?<a class="headerlink" href="#por-que-usar-parse" title="Permanent link">&para;</a></h3>
+<p>Logs chegam como texto, mas os dados úteis estão <em>dentro</em> do texto:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>2024-03-12 10:45:32 ERROR [payment-service] statusCode=500 duration=2345ms userId=usr_7823 endpoint=/api/checkout
+</span></code></pre></div>
+<p>O <code>parse</code> transforma esse texto em colunas que podem ser filtradas, agregadas e analisadas.</p>
+<h3 id="padroes-grok-os-mais-comuns">Padrões GROK — os mais comuns<a class="headerlink" href="#padroes-grok-os-mais-comuns" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Padrão</th>
+<th>O que captura</th>
+<th>Exemplo no log</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DATA</code></td>
+<td>Qualquer caractere (não-greedy)</td>
+<td>Nome, mensagem</td>
+</tr>
+<tr>
+<td><code>LD</code></td>
+<td>Dados até o próximo delimitador</td>
+<td>Valor de campo</td>
+</tr>
+<tr>
+<td><code>INT</code></td>
+<td>Número inteiro</td>
+<td><code>42</code>, <code>-7</code></td>
+</tr>
+<tr>
+<td><code>LONG</code></td>
+<td>Número inteiro longo</td>
+<td><code>1234567890</code></td>
+</tr>
+<tr>
+<td><code>FLOAT</code></td>
+<td>Número decimal</td>
+<td><code>3.14</code></td>
+</tr>
+<tr>
+<td><code>WORD</code></td>
+<td>Sequência sem espaço</td>
+<td><code>ERROR</code>, <code>userId</code></td>
+</tr>
+<tr>
+<td><code>SPACE</code></td>
+<td>Um ou mais espaços</td>
+<td><code></code></td>
+</tr>
+<tr>
+<td><code>TIMESTAMP</code></td>
+<td>Timestamp ISO</td>
+<td><code>2024-03-12T10:45:32</code></td>
+</tr>
+<tr>
+<td><code>IPADDR</code></td>
+<td>Endereço IP</td>
+<td><code>192.168.1.1</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="sintaxe-basica_2">Sintaxe básica<a class="headerlink" href="#sintaxe-basica_2" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>| parse content, &quot;LD &#39;statusCode=&#39; INT:status_code &#39; duration=&#39; LONG:duration_ms &#39;ms&#39;&quot;
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>| fields timestamp, status_code, duration_ms, content
+</span></code></pre></div>
+<p><strong>Como ler o padrão:</strong>
+- Texto entre <code>'...'</code> é literal — deve aparecer exatamente assim no log
+- <code>LD</code> captura tudo até o próximo padrão
+- <code>INT:status_code</code> — captura um inteiro e nomeia o campo <code>status_code</code></p>
+<h3 id="exemplo-completo-parsing-de-log-http">Exemplo completo — parsing de log HTTP<a class="headerlink" href="#exemplo-completo-parsing-de-log-http" title="Permanent link">&para;</a></h3>
+<p>Log original:
+<div class="language-text highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>[2024-03-12 10:45:32] 192.168.1.10 POST /api/checkout 200 1523ms
+</span></code></pre></div></p>
+<p>Query:
+<div class="language-text highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>| filter contains(content, &quot;POST&quot;) or contains(content, &quot;GET&quot;)
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>| parse content, &quot;&#39;[&#39; TIMESTAMP:req_time &#39;] &#39; IPADDR:client_ip &#39; &#39; WORD:method &#39; &#39; LD:endpoint &#39; &#39; INT:status_code &#39; &#39; LONG:duration_ms &#39;ms&#39;&quot;
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a>| fields req_time, client_ip, method, endpoint, status_code, duration_ms
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a>| filter status_code &gt;= 500
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a>| sort duration_ms, direction: &quot;descending&quot;
+</span></code></pre></div></p>
+<h3 id="parsing-de-json">Parsing de JSON<a class="headerlink" href="#parsing-de-json" title="Permanent link">&para;</a></h3>
+<p>Quando o campo de log já é um JSON string:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>| filter startsWith(content, &quot;{&quot;)
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>| parse content, &quot;JSON{user_id: string:user_id, action: string:action, amount: double:amount}&quot;
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>| fields timestamp, user_id, action, amount
+</span></code></pre></div>
+<h3 id="parsing-de-chavevalor">Parsing de chave=valor<a class="headerlink" href="#parsing-de-chavevalor" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>| parse content, &quot;KVP{&#39;:&#39;,&#39;\\n&#39;:kvp}&quot;    // key=value pairs separados por nova linha
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>| fields timestamp, kvp
+</span></code></pre></div>
+<h3 id="parse-como-funcao-inline-em-fields"><code>parse</code> como função inline em <code>fields</code><a class="headerlink" href="#parse-como-funcao-inline-em-fields" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>| fields
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>    timestamp,
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>    content,
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a>    parsed = parse(content, &quot;LD &#39;level=&#39; WORD:level &#39; msg=&#39; LD:message&quot;)
+</span></code></pre></div>
+<blockquote>
+<p>💡 Teste padrões de parse no <a href="https://docs.dynatrace.com/docs/shortlink/dql-parse">Dynatrace DQL Log Pattern Tester</a> antes de usar em produção.</p>
+</blockquote>
+<hr />
+<h2 id="6-ordenacao-com-sort">6. Ordenação com <code>sort</code><a class="headerlink" href="#6-ordenacao-com-sort" title="Permanent link">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>fetch logs, from: now() - 1h
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>| filter loglevel == &quot;ERROR&quot;
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>| sort timestamp, direction: &quot;descending&quot;    // mais recente primeiro
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a>| limit 50
+</span></code></pre></div>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>// Ordenação por múltiplos campos
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a>fetch logs, from: now() - 1h
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a>| summarize count = count(), by: {loglevel, dt.entity.service}
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a>| sort count, direction: &quot;descending&quot;
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a>| sort loglevel, direction: &quot;ascending&quot;
+</span></code></pre></div>
+<hr />
+<h2 id="7-exemplos-integrados">7. Exemplos Integrados<a class="headerlink" href="#7-exemplos-integrados" title="Permanent link">&para;</a></h2>
+<h3 id="exemplo-1-dashboard-de-saude-erros-por-servico-ultimas-4h">Exemplo 1: Dashboard de saúde — erros por serviço (últimas 4h)<a class="headerlink" href="#exemplo-1-dashboard-de-saude-erros-por-servico-ultimas-4h" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>fetch logs, from: now() - 4h
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>| filter loglevel in [&quot;ERROR&quot;, &quot;FATAL&quot;]
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>| filter isNotNull(dt.entity.service)
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>| summarize
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>    errors   = count(),
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    distinct = countDistinct(exception.type),
+</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a>    by: {dt.entity.service}
+</span><span id="__span-25-8"><a id="__codelineno-25-8" name="__codelineno-25-8" href="#__codelineno-25-8"></a>| sort errors, direction: &quot;descending&quot;
+</span><span id="__span-25-9"><a id="__codelineno-25-9" name="__codelineno-25-9" href="#__codelineno-25-9"></a>| limit 15
+</span></code></pre></div>
+<h3 id="exemplo-2-tendencia-de-erros-por-minuto-grafico-de-linha">Exemplo 2: Tendência de erros por minuto (gráfico de linha)<a class="headerlink" href="#exemplo-2-tendencia-de-erros-por-minuto-grafico-de-linha" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>fetch logs, from: now() - 2h
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>| filter loglevel == &quot;ERROR&quot;
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>| makeTimeseries error_count = count(), interval: 1m
+</span></code></pre></div>
+<h3 id="exemplo-3-analise-de-latencia-de-endpoint">Exemplo 3: Análise de latência de endpoint<a class="headerlink" href="#exemplo-3-analise-de-latencia-de-endpoint" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>// Extrai método e latência de logs de request e calcula p95 por endpoint
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>fetch logs, from: now() - 1h
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>| filter contains(content, &quot;method=&quot;)
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a>| parse content, &quot;LD &#39;method=&#39; WORD:method &#39; path=&#39; LD:path &#39; status=&#39; INT:status &#39; duration=&#39; LONG:latency_ms &#39;ms&#39;&quot;
+</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a>| filter isNotNull(latency_ms)
+</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a>| summarize
+</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a>    req_count = count(),
+</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>    avg_ms    = avg(latency_ms),
+</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a>    p95_ms    = percentile(latency_ms, 95),
+</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a>    by: {method, path}
+</span><span id="__span-27-11"><a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a>| sort p95_ms, direction: &quot;descending&quot;
+</span><span id="__span-27-12"><a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a>| limit 20
+</span></code></pre></div>
+<h3 id="exemplo-4-analise-exploratoria-de-campos-desconhecidos">Exemplo 4: Análise exploratória de campos desconhecidos<a class="headerlink" href="#exemplo-4-analise-exploratoria-de-campos-desconhecidos" title="Permanent link">&para;</a></h3>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>// O que tem nesses logs? Quais campos existem?
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a>fetch logs, from: now() - 30m
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>| filter contains(content, &quot;checkout&quot;)
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a>| fieldsSummary
+</span></code></pre></div>
+<hr />
+<h2 id="resumo-dql-200">Resumo DQL 200<a class="headerlink" href="#resumo-dql-200" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Comando / Função</th>
+<th>O que faz</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>summarize agg = func(), by: {campo}</code></td>
+<td>Agrega dados com agrupamento</td>
+</tr>
+<tr>
+<td><code>countIf(condição)</code></td>
+<td>Conta registros condicionalmente</td>
+</tr>
+<tr>
+<td><code>countDistinct(campo)</code></td>
+<td>Conta valores únicos</td>
+</tr>
+<tr>
+<td><code>percentile(campo, P)</code></td>
+<td>Calcula percentil P</td>
+</tr>
+<tr>
+<td><code>makeTimeseries agg = func(), interval: Xm</code></td>
+<td>Série temporal de qualquer fonte</td>
+</tr>
+<tr>
+<td><code>fields c1, c2, novo = expr</code></td>
+<td>Seleciona e calcula campos</td>
+</tr>
+<tr>
+<td><code>fields -campo</code></td>
+<td>Remove campo do resultado</td>
+</tr>
+<tr>
+<td><code>fieldsSummary</code></td>
+<td>Análise exploratória de campos</td>
+</tr>
+<tr>
+<td><code>expand campo</code></td>
+<td>Explode array em múltiplas linhas</td>
+</tr>
+<tr>
+<td><code>arraySize(campo)</code></td>
+<td>Tamanho do array</td>
+</tr>
+<tr>
+<td><code>arrayContains(campo, val)</code></td>
+<td>Verifica se array contém valor</td>
+</tr>
+<tr>
+<td><code>parse conteúdo, "PADRÃO"</code></td>
+<td>Extrai campos de texto livre</td>
+</tr>
+<tr>
+<td><code>sort campo, direction: "desc"</code></td>
+<td>Ordena resultados</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="proximo-modulo">Próximo Módulo<a class="headerlink" href="#proximo-modulo" title="Permanent link">&para;</a></h2>
+<p>➡️ <a href="../03-dql300-avancado/">DQL 300 — Enriquecimento e Conexão de Dados</a></p>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+  <form class="md-feedback" name="feedback" hidden>
+    <fieldset>
+      <legend class="md-feedback__title">
+        Esta página foi útil?
+      </legend>
+      <div class="md-feedback__inner">
+        <div class="md-feedback__list">
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="Sim" data-md-value="1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M5 9v12H1V9zm4 12a2 2 0 0 1-2-2V9c0-.55.22-1.05.59-1.41L14.17 1l1.06 1.06c.27.27.44.64.44 1.05l-.03.32L14.69 8H21a2 2 0 0 1 2 2v2c0 .26-.05.5-.14.73l-3.02 7.05C19.54 20.5 18.83 21 18 21zm0-2h9.03L21 12v-2h-8.79l1.13-5.32L9 9.03z"/></svg>
+            </button>
+          
+            <button class="md-feedback__icon md-icon" type="submit" title="Não" data-md-value="0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 15V3h4v12zM15 3a2 2 0 0 1 2 2v10c0 .55-.22 1.05-.59 1.41L9.83 23l-1.06-1.06c-.27-.27-.44-.64-.44-1.06l.03-.31.95-4.57H3a2 2 0 0 1-2-2v-2c0-.26.05-.5.14-.73l3.02-7.05C4.46 3.5 5.17 3 6 3zm0 2H5.97L3 12v2h8.78l-1.13 5.32L15 14.97z"/></svg>
+            </button>
+          
+        </div>
+        <div class="md-feedback__note">
+          
+            <div data-md-value="1" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Obrigado pelo feedback!
+            </div>
+          
+            <div data-md-value="0" hidden>
+              
+              
+                
+              
+              
+              
+                
+                
+              
+              Nos diga como melhorar abrindo uma issue.
+            </div>
+          
+        </div>
+      </div>
+    </fieldset>
+  </form>
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Voltar para o topo
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Rodapé" >
+        
+          
+          <a href="../01-dql100-fundamentos/" class="md-footer__link md-footer__link--prev" aria-label="Anterior: DQL 100 — Fundamentos">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Anterior
+              </span>
+              <div class="md-ellipsis">
+                DQL 100 — Fundamentos
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../03-dql300-avancado/" class="md-footer__link md-footer__link--next" aria-label="Próximo: DQL 300 — Avançado">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Próximo
+              </span>
+              <div class="md-ellipsis">
+                DQL 300 — Avançado
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      &copy; 2026 Dynatrace Partner Enablement — Material para uso interno de parceiros
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/dynatrace" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://university.dynatrace.com" target="_blank" rel="noopener" title="university.dynatrace.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="m48 195.8 209.2 86.1c9.8 4 20.2 6.1 30.8 6.1s21-2.1 30.8-6.1l242.4-99.8c9-3.7 14.8-12.4 14.8-22.1s-5.8-18.4-14.8-22.1L318.8 38.1c-9.8-4-20.2-6.1-30.8-6.1s-21 2.1-30.8 6.1L14.8 137.9C5.8 141.6 0 150.3 0 160v296c0 13.3 10.7 24 24 24s24-10.7 24-24zm48 71.7V384c0 53 86 96 192 96s192-43 192-96V267.4l-142.9 58.9c-15.6 6.4-32.2 9.7-49.1 9.7s-33.5-3.3-49.1-9.7L96 267.4z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.top", "navigation.footer", "content.code.copy", "content.code.annotate", "search.highlight", "search.share", "toc.follow"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copiado para \u00e1rea de transfer\u00eancia", "clipboard.copy": "Copiar para \u00e1rea de transfer\u00eancia", "search.result.more.one": "mais 1 nesta p\u00e1gina", "search.result.more.other": "# mais nesta p\u00e1gina", "search.result.none": "Nenhum documento encontrado", "search.result.one": "1 documento encontrado", "search.result.other": "# documentos encontrados", "search.result.placeholder": "Digite para iniciar a busca", "search.result.term.missing": "Ausente", "select.version": "Selecione a vers\u00e3o"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

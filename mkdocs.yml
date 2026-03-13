@@ -1,0 +1,120 @@
+site_name: DQL para Parceiros Dynatrace
+site_description: Workshop de DQL (Dynatrace Query Language) para parceiros — fundamentos, agregação e conceitos avançados
+site_author: Dynatrace Partner Enablement
+site_url: https://alan-delcaro.github.io/workshop-dql-parceiros/
+
+repo_name: workshop-dql-parceiros
+repo_url: https://github.com/alan-delcaro/workshop-dql-parceiros
+edit_uri: ""
+
+docs_dir: .
+site_dir: site
+exclude_docs: |
+  slides/
+  solucoes/
+  site/
+  .github/
+  mkdocs.yml
+  requirements.txt
+  .gitignore
+
+theme:
+  name: material
+  language: pt-BR
+  palette:
+    - scheme: slate
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/brightness-4
+        name: Modo claro
+    - scheme: default
+      primary: teal
+      accent: cyan
+      toggle:
+        icon: material/brightness-7
+        name: Modo escuro
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - content.code.annotate
+    - search.highlight
+    - search.share
+    - toc.follow
+
+plugins:
+  - search:
+      lang: pt
+
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      title: Nesta página
+
+nav:
+  - Home: README.md
+  - Agenda: AGENDA.md
+  - Módulos:
+    - Introdução ao Grail e DQL: modulos/00-introducao.md
+    - "DQL 100 — Fundamentos": modulos/01-dql100-fundamentos.md
+    - "DQL 200 — Agregação": modulos/02-dql200-agregacao.md
+    - "DQL 300 — Avançado": modulos/03-dql300-avancado.md
+    - Casos de Uso Práticos: modulos/04-casos-de-uso.md
+  - Labs (Hands-on):
+    - Guia dos Labs: labs/README.md
+    - "Lab 01 — Fundamentos": labs/lab-01-fundamentos.md
+    - "Lab 02 — Agregação": labs/lab-02-agregacao.md
+    - "Lab 03 — Avançado": labs/lab-03-avancado.md
+  - Gabaritos:
+    - Soluções Lab 01: solucoes/lab-01-solucoes.md
+    - Soluções Lab 02: solucoes/lab-02-solucoes.md
+    - Soluções Lab 03: solucoes/lab-03-solucoes.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/dynatrace
+    - icon: fontawesome/solid/graduation-cap
+      link: https://university.dynatrace.com
+  analytics:
+    feedback:
+      title: Esta página foi útil?
+      ratings:
+        - icon: material/thumb-up-outline
+          name: Sim
+          data: 1
+          note: Obrigado pelo feedback!
+        - icon: material/thumb-down-outline
+          name: Não
+          data: 0
+          note: Nos diga como melhorar abrindo uma issue.
+
+copyright: "&copy; 2026 Dynatrace Partner Enablement — Material para uso interno de parceiros"

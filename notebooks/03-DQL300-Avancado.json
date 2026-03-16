@@ -1,82 +1,55 @@
 {
-  "metadata": {
-    "displayName": "Módulo 03 — DQL 300: Enriquecimento e Joins",
-    "description": "Dominar entityAttr, lookup, join e append para conectar dados de múltiplas fontes",
-    "author": "Dynatrace Partner Enablement",
-    "tags": ["dql", "dql-300", "avancado", "lookup", "join", "workshop"]
+  "version": "7",
+  "defaultTimeframe": {
+    "from": "now()-1h",
+    "to": "now()"
   },
-  "cells": [
+  "defaultSegments": [],
+  "sections": [
     {
+      "id": "g0d752ed-6008-4833-854f-c5b4d7a29fa1",
       "type": "markdown",
-      "content": "# DQL 300 — Enriquecimento e Joins\n\n**Duração:** ~25 minutos  \n**Objetivo:** Conectar dados de múltiplas fontes e enriquecer com metadados"
+      "markdown": "# Módulo 03 — DQL 300: Correlação e Análise Avançada\n\n**Duração:** ~50 minutos  \n**Objetivo:** Dominar `join`, `lookup`, `filter` complexos, e correlacionar dados de múltiplas fontes\n\n## O Poder da Correlação\n\nAntes: \"Tenho logs de erro, mas agora preciso achar os spans correspondentes...\"\n\nAgora com DQL: **Uma única query correlaciona tudo via `dt.entity.*`**\n\nTodos os dados chegam com enriquecimento automático da entidade (serviço, host, aplicação), permitindo correlações powerfulls."
     },
     {
+      "id": "g1d752ed-6008-4833-854f-c5b4d7a29fa2",
       "type": "markdown",
-      "content": "## O Problema dos Entity IDs\n\nLogs contêm IDs opacos:\n```\ndt.entity.service = \"SERVICE-ABCD1234\"  ← inútil\n```\n\nQueremos:\n```\nservice_name = \"payment-service-prod\"  ← legível!\n```\n\n**3 soluções:** `entityAttr` | `lookup` | `join`"
+      "markdown": "## `join` — Cruzar Dados de Duas Fontes\n\nUnir dados de logs com spans baseado em uma chave comum:\n\n```dql\nfetch logs\n| filter severity = \"ERROR\"\n| join [fetch spans | filter otel.status_code = \"ERROR\"]\n  on dt.entity.service\n```\n\nResultado: Cada log de erro é apresentado com os spans correspondentes do mesmo serviço.\n\n**Tipos de join:**\n- `join` (inner join) — apenas matches\n- `left join` — todos do lado esquerdo + matches"
     },
     {
+      "id": "g2d752ed-6008-4833-854f-c5b4d7a29fa3",
       "type": "markdown",
-      "content": "## 1. O Comando `entityAttr`\n\nResolve **1-2 atributos** de entidade de forma inline."
+      "markdown": "## `lookup` — Enriquecer com Metadados\n\nAdicionar informações adicionais de uma tabela de lookup:\n\n```dql\nfetch logs\n| lookup [fetch dt.entity.service | fields id, display.name]\n  on dt.entity.service = id\n```\n\nAgora cada log tem o `display.name` do serviço.  \nÚtil para: nomes humanizáveis, propriedades customizadas, dados de CMDB."
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 1: Resolver nomes de serviços\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| fields\n    timestamp,\n    service = entityAttr(dt.entity.service, \"entity.name\"),\n    host    = entityAttr(dt.entity.host, \"entity.name\")\n| sort timestamp, direction: \"descending\"\n| limit 30"
-    },
-    {
+      "id": "g3d752ed-6008-4833-854f-c5b4d7a29fa4",
       "type": "markdown",
-      "content": "## 2. O Comando `lookup`\n\nEnriquece com **múltiplos atributos** usando uma segunda query."
+      "markdown": "## Smartscape — O Modelo de Entidades\n\nTodos os records vêm já enriquecidos com:\n\n- **`dt.entity.service`** — qual serviço responsável\n- **`dt.entity.host`** — em qual host está\n- **`dt.entity.process_group`** — qual process group\n- **`dt.entity.application`** — qual aplicação frontend\n- **`dt.entity.database`** — se é database\n\n```dql\nfetch logs\n| fields dt.entity.service, dt.entity.host, severity\n| summarize count() by {dt.entity.service, dt.entity.host}\n```\n\nResultado: Erro count por serviço E host, automaticamente."
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 2: Lookup com metadados de serviço\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| summarize errors = count(), by: {service_id = dt.entity.service}\n\n| lookup [\n    fetch dt.entity.service\n    | fields entity.id, entity.name, lifecycleState, tags\n  ],\n  sourceField: service_id,\n  lookupField: entity.id\n\n| fields entity.name, errors, lifecycleState\n| sort errors, direction: \"descending\""
-    },
-    {
+      "id": "g4d752ed-6008-4833-854f-c5b4d7a29fa5",
       "type": "markdown",
-      "content": "## 3. O Comando `data`\n\nCria uma tabela de referência inline para usar com `lookup`."
+      "markdown": "## Exemplo 1: Correlação Logs → Spans → Entidades\n\n\"Quais serviços com mais erros nos últimos 30min?\"\n\n```dql\nfetch logs\n| filter timestamp >= now()-30m\n| filter severity = \"ERROR\"\n| summarize num_errors = count() as errors\n  by dt.entity.service\n| sort num_errors desc\n| limit 10\n```\n\nResultado: Top 10 serviços com mais erros, fácil demais!"
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 3: Tabela de mapeamento de HTTP status\nfetch logs, from: now() - 2h\n| parse content, \"LD 'status=' INT:code LD\"\n| lookup [\n    data record(code: 200, label: \"Success\"),\n         record(code: 400, label: \"Bad Request\"),\n         record(code: 401, label: \"Unauthorized\"),\n         record(code: 500, label: \"Server Error\"),\n         record(code: 503, label: \"Unavailable\")\n  ],\n  sourceField: code,\n  lookupField: code\n| summarize count = count(), by: {label}"
-    },
-    {
+      "id": "g5d752ed-6008-4833-854f-c5b4d7a29fa6",
       "type": "markdown",
-      "content": "## 4. O Comando `join`\n\nCruzar dois datasets (INNER, LEFT ou RIGHT join)."
+      "markdown": "## Exemplo 2: Correlação Multi-Fonte\n\n\"Erros de log + latência de spans para cada serviço\"\n\n```dql\nfetch logs\n| filter severity = \"ERROR\"\n| summarize error_count = count() by dt.entity.service\n| join [\n    fetch spans\n    | summarize p95_latency = percentile(span.duration, 95)\n      by dt.entity.service\n  ]\n  on dt.entity.service\n```\n\nResultado: Tabela com serviço, error_count, p95_latency — todos correlacionados!"
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 4: Error rate combinando dois datasets\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| summarize errors = count(), by: {dt.entity.service}\n\n| join [\n    fetch logs, from: now() - 1h\n    | summarize total = count(), by: {dt.entity.service}\n  ],\n  on: {dt.entity.service},\n  kind: left\n\n| fields\n    service = entityAttr(dt.entity.service, \"entity.name\"),\n    errors, total,\n    error_pct = round(errors / total * 100, 2)\n| sort error_pct, direction: \"descending\""
-    },
-    {
+      "id": "g6d752ed-6008-4833-854f-c5b4d7a29fa7",
       "type": "markdown",
-      "content": "## 5. O Comando `append`\n\nCombina registros de múltiplas fontes (UNION ALL)."
+      "markdown": "## Exemplo 3: Investigação de Problema Root-Cause\n\n\"Um cliente reportou lentidão. Quais serviços envolvidos e qual o erro?\"\n\n```dql\nfetch spans\n| filter span.duration > 5000  # Mais de 5 segundos\n| join [\n    fetch logs | filter severity = \"ERROR\"\n  ]\n  on {dt.entity.service, timestamp}\n| summarize \n    span_p95 = percentile(span.duration, 95),\n    error_count = count_distinct(timestamp)\n  by {dt.entity.service, dt.entity.host}\n| sort span_p95 desc\n```\n\nResultado: Visualização completa do impacto — serviços lentos + erros associados."
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 5: Timeline de erros + deploys\nfetch logs, from: now() - 7d\n| filter loglevel == \"ERROR\"\n| fields timestamp, type = \"LOG_ERROR\", desc = content\n\n| append [\n    fetch events, from: now() - 7d\n    | filter event.type == \"DEPLOYMENT\"\n    | fields timestamp, type = \"DEPLOY\", desc = event.name\n  ]\n\n| sort timestamp, direction: \"descending\"\n| limit 100"
-    },
-    {
+      "id": "g7d752ed-6008-4833-854f-c5b4d7a29fa8",
       "type": "markdown",
-      "content": "## Pipeline Mestre — Tudo junto!\n\nCombinando `fetch` + `summarize` + `lookup` + `fields`"
+      "markdown": "## `case` e Lógica Condicional\n\n```dql\nfetch logs\n| extend severity_category = case(\n    severity = \"ERROR\" -> \"Critical\",\n    severity = \"WARN\" -> \"Warning\",\n    true -> \"Info\"\n  )\n| summarize count() by severity_category\n```\n\nÚtil para: categorização, scoring, cálculos complexos."
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 6: Service Health Dashboard (última 1 hora)\nfetch logs, from: now() - 1h\n| filter isNotNull(dt.entity.service)\n| summarize \n    total = count(), \n    errors = countIf(loglevel == \"ERROR\"),\n    by: {service_id = dt.entity.service}\n\n| lookup [\n    fetch dt.entity.service \n    | fields entity.id, entity.name, lifecycleState\n  ],\n  sourceField: service_id, \n  lookupField: entity.id\n\n| filter isNotNull(entity.name)\n| fields \n    service_name = entity.name, \n    lifecycleState, \n    total, \n    errors,\n    error_rate = round(errors / total * 100, 2),\n    health = if(errors/total > 0.05, \"CRITICAL\",\n             if(errors/total > 0.01, \"DEGRADED\", \"HEALTHY\"))\n| sort error_rate, direction: \"descending\""
-    },
-    {
+      "id": "g8d752ed-6008-4833-854f-c5b4d7a29fa9",
       "type": "markdown",
-      "content": "## 📊 Desafio Avançado\n\nCrie uma query que:\n1. Busque logs das últimas 4 horas\n2. Filtre apenas ERROR\n3. Agregue por serviço (contando erros)\n4. Use `lookup` para resolver nomes de serviço\n5. Ordene por número de erros (descendente)"
-    },
-    {
-      "type": "dql",
-      "content": "// ← Escreva sua query avançada aqui!\n// Dica: Use fetch + filter + summarize + lookup + sort"
-    },
-    {
-      "type": "markdown",
-      "content": "## Resumo Final\n\n| Comando | Quando usar |\n|---------|-------------|\n| `entityAttr` | 1-2 atributos, inline |\n| `lookup` | Múltiplos atributos |\n| `join` | Cruzar 2 datasets |\n| `data` | Tabela de referência |\n| `append` | Combinar fontes diferentes |"
-    },
-    {
-      "type": "markdown",
-      "content": "## Parabéns! 🎉\n\nVocê dominou:\n- ✅ **DQL 100:** Fetch, filter, filterOut, timeseries\n- ✅ **DQL 200:** Summarize, makeTimeseries, fields, parse\n- ✅ **DQL 300:** EntityAttr, lookup, join, append\n\n**Próximas etapas:** Explorar casos de uso específicos do seu ambiente!"
+      "markdown": "## Performance: Boas Práticas\n\n1. **Filtrar CEDO** — `filter` reduz dados desde o início\n   ```dql\n   fetch logs | filter timestamp >= now()-1h | filter severity = \"ERROR\"\n   ```\n\n2. **Selecionar campos necessários** — `fields` reduz transferência\n   ```dql\n   fetch logs | fields timestamp, severity, dt.entity.service\n   ```\n\n3. **Evitar joins desnecessários** — Smartscape já enriquece para você\n   ```dql\n   -- Sim ✅\n   fetch logs | summarize count() by dt.entity.service\n   \n   -- Não ❌ (join desnecessário)\n   fetch logs | join [fetch dt.entity.service] on dt.entity.service\n   ```"
     }
   ]
 }

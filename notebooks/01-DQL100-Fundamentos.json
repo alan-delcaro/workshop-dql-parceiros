@@ -1,94 +1,35 @@
 {
-  "metadata": {
-    "displayName": "Módulo 01 — DQL 100: Fundamentos",
-    "description": "Dominar fetch, filter, filterOut, timeseries — os comandos básicos para buscar e filtrar dados",
-    "author": "Dynatrace Partner Enablement",
-    "tags": ["dql", "dql-100", "fetch", "filter", "workshop"]
+  "version": "7",
+  "defaultTimeframe": {
+    "from": "now()-30m",
+    "to": "now()"
   },
-  "cells": [
+  "defaultSegments": [],
+  "sections": [
     {
+      "id": "a3d752ed-6008-4833-854f-c5b4d7a29fa1",
       "type": "markdown",
-      "content": "# DQL 100 — Fundamentos\n\n**Duração:** ~25 minutos  \n**Objetivo:** Dominar os comandos básicos para buscar, filtrar e limitar dados no Grail"
+      "markdown": "# Módulo 01 — DQL 100: Fundamentos\n\n**Duração:** ~40 minutos  \n**Objetivo:** Escribir queries DQL básicas, entender a sintaxe, e executar buscas em logs, spans e métricas\n\n## Estrutura de uma Query DQL\n\n```dql\nfetch <source>\n| filter <condição>\n| fields <colunas>\n| limit <número>\n```\n\nCada query começa com uma **fonte de dados** (`fetch`), depois encadeia operadores com `|`."
     },
     {
+      "id": "b3d752ed-6008-4833-854f-c5b4d7a29fa2",
       "type": "markdown",
-      "content": "## 1. O Comando `fetch`\n\nO `fetch` é o **ponto de partida** de quase toda query DQL."
+      "markdown": "## Fontes de Dados Disponíveis\n\n### 1. **Logs**\n- **Source:** `fetch logs`\n- **Campos:** `content`, `severity`, `dt.source_entity`, `timestamp`, etc.\n- **Uso:** Analisar logs de aplicações, infraestrutura, eventos do sistema\n\n### 2. **Spans (Traces)**\n- **Source:** `fetch spans`\n- **Campos:** `span.name`, `span.kind`, `trace.id`, `span.duration`, `dt.entity.service`, `otel.status_code`, etc.\n- **Uso:** Análise de latência, erros, distribuição de chamadas\n\n### 3. **Métricas**\n- **Source:** `fetch metrics(\"<métrica>\")`\n- **Campos:** `value`, `timestamp`, `dt.entity.<tipo>`, dimensões customizadas\n- **Uso:** Análise de timeseries, agregações, tendências"
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 1: Buscar logs da última hora\nfetch logs, from: now() - 1h"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 2: Buscar métricas dos últimos 30 minutos\nfetch metrics, from: now() - 30m"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 3: Buscar spans dos últimos 7 dias\nfetch spans, from: now() - 7d"
-    },
-    {
+      "id": "c3d752ed-6008-4833-854f-c5b4d7a29fa3",
       "type": "markdown",
-      "content": "## 2. O Comando `filter`\n\nO `filter` mantém apenas os registros que **satisfazem** a condição."
+      "markdown": "## Operadores Fundamentais\n\n### `filter` — Selecionar Linhas\nFiltrar dados baseado em condições:\n\n```dql\nfetch logs\n| filter content contains \"ERROR\"\n| filter severity = \"ERROR\" or severity = \"WARN\"\n| filter timestamp >= now()-1h\n```\n\n### `fields` — Selecionar Colunas\nEscolher quais campos aparecem no resultado:\n\n```dql\nfetch logs\n| fields timestamp, severity, content\n```\n\n### `limit` — Limitar Resultado\nMostrar apenas N primeiras linhas:\n\n```dql\nfetch logs\n| limit 10\n```"
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 4: Filtrar apenas logs de ERROR\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\""
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 5: Combinar múltiplos filtros\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| filter isNotNull(dt.entity.service)"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 6: Usar IN para filtrar por lista\nfetch logs, from: now() - 1h\n| filter loglevel in [\"ERROR\", \"WARN\", \"CRITICAL\"]"
-    },
-    {
+      "id": "d3d752ed-6008-4833-854f-c5b4d7a29fa4",
       "type": "markdown",
-      "content": "## 3. O Comando `filterOut`\n\nO `filterOut` **exclui** os registros que satisfazem a condição — é o inverso do `filter`."
+      "markdown": "## Operadores de Agregação\n\n### `summarize` — Agrupar e Agregar\nContar, somar, calcular média, etc.:\n\n```dql\nfetch logs\n| filter severity = \"ERROR\"\n| summarize count() by severity\n```\n\nThis groups logs by severity and counts each group.\n\n### `sort` — Ordenar\nOrdenar resultado por um ou mais campos:\n\n```dql\nfetch spans\n| sort span.duration desc\n| limit 10\n```"
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 7: Excluir logs de healthcheck\nfetch logs, from: now() - 1h\n| filterOut contains(content, \"/health\") or contains(content, \"/ping\")"
-    },
-    {
+      "id": "e3d752ed-6008-4833-854f-c5b4d7a29fa5",
       "type": "markdown",
-      "content": "## 4. Funções de Match em Strings\n\n| Função | Uso |\n|--------|-----|\n| `contains(campo, \"val\")` | Substring simples |\n| `matchesValue(campo, \"val*\")` | Com wildcards (*, ?) |\n| `matchesPhrase(campo, \"frase\")` | Frase em texto livre |\n| `startsWith` / `endsWith` | Prefixo / sufixo |"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 8: Buscar com contains\nfetch logs, from: now() - 1h\n| filter contains(content, \"NullPointerException\")"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 9: Buscar com matchesValue (wildcard)\nfetch logs, from: now() - 1h\n| filter matchesValue(dt.entity.service_name, \"payment*\")"
-    },
-    {
-      "type": "markdown",
-      "content": "## 5. Controlos de Volume\n\n- `limit N` — retorna apenas N registros\n- `samplingRatio X` — amostra aleatória (X:0-1)\n- `scanLimitGBytes: N` — limita o scan real"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 10: Limitar saída a 100 registros\nfetch logs, from: now() - 1h\n| limit 100"
-    },
-    {
-      "type": "markdown",
-      "content": "## 6. O Comando `timeseries`\n\nAgrega métricas e eventos em séries de tempo."
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 11: Média de CPU por host, a cada 5 minutos\ntimeseries {\n    avg_cpu = avg(dt.host.cpu.usage)\n},\n    interval: 5m,\n    from: now() - 2h"
-    },
-    {
-      "type": "markdown",
-      "content": "## 📝 Exercício Prático\n\nTente criar uma query que:\n1. Busque logs das últimas 2 horas\n2. Filtre apenas ERROR e WARN\n3. Retorne no máximo 50 registros"
-    },
-    {
-      "type": "dql",
-      "content": "// ← Escreva sua query aqui!\n// Dica: fetch logs, from: now() - 2h\n//       | filter ...\n//       | limit 50"
-    },
-    {
-      "type": "markdown",
-      "content": "## Próximo Módulo\n\n➡️ **DQL 200 — Agregação e Parsing**  \nDomineSummarize, makeTimeseries, fields e parse"
+      "markdown": "## Exemplo Prático: Dashboard de Erros\n\nVocê quer: \"Mostrar os 10 piores logs dos últimos 30 minutos, agrupados por severity\"\n\n```dql\nfetch logs\n| filter timestamp >= now()-30m\n| filter severity = \"ERROR\" or severity = \"WARN\"\n| sort timestamp desc\n| limit 10\n```\n\nResultado: Table com timestamp, severity, content (últimos 10 erros/warnings recentes)"
     }
   ]
 }

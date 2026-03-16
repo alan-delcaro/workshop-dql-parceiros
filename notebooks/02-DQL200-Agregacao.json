@@ -1,86 +1,40 @@
 {
-  "metadata": {
-    "displayName": "Módulo 02 — DQL 200: Agregação e Parsing",
-    "description": "Dominar summarize, makeTimeseries, fields, fieldsSummary e parse para transformar dados",
-    "author": "Dynatrace Partner Enablement",
-    "tags": ["dql", "dql-200", "agregacao", "parse", "workshop"]
+  "version": "7",
+  "defaultTimeframe": {
+    "from": "now()-2h",
+    "to": "now()"
   },
-  "cells": [
+  "defaultSegments": [],
+  "sections": [
     {
+      "id": "f4d752ed-6008-4833-854f-c5b4d7a29fa1",
       "type": "markdown",
-      "content": "# DQL 200 — Agregação e Parsing\n\n**Duração:** ~25 minutos  \n**Objetivo:** Transformar dados brutos em insights agregados e estruturados"
+      "markdown": "# Módulo 02 — DQL 200: Agregação e Timeseries\n\n**Duração:** ~40 minutos  \n**Objetivo:** Dominar `summarize`, `timeseries`, e criar dashboards com dados agregados\n\n## Operador `summarize` em Profundidade\n\nAgrega dados em grupos, aplicando funções a cada grupo:\n\n```dql\nfetch logs\n| summarize count() as num_logs, \n            avg(duration) as tempo_medio \n  by severity\n```\n\nResultado:\n| severity | num_logs | tempo_medio |\n|---|---|---|\n| ERROR | 1,234 | 125ms |\n| WARN | 5,678 | 45ms |\n| INFO | 98,765 | 5ms |"
     },
     {
+      "id": "f5d752ed-6008-4833-854f-c5b4d7a29fa2",
       "type": "markdown",
-      "content": "## 1. O Comando `summarize`\n\nAgrega dados e calcula estatísticas (count, avg, sum, percentile, etc.)."
+      "markdown": "## Funções de Agregação\n\n| Função | Descrição | Exemplo |\n|---|---|---|\n| `count()` | Contar linhas | `summarize count() by severity` |\n| `count_distinct()` | Contar valores únicos | `summarize count_distinct(dt.entity.service)` |\n| `sum()` | Somar valores | `summarize sum(bytes_sent)` |\n| `avg()` | Média | `summarize avg(response_time)` |\n| `min()` / `max()` | Min/Max | `summarize min(latency), max(latency)` |\n| `percentile()` | Percentil (p50, p95, p99) | `summarize percentile(duration, 95) as p95` |\n| `unique_values()` | Lista valores únicos | `summarize unique_values(host_name)` |"
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 1: Contar logs por nível\nfetch logs, from: now() - 1h\n| summarize count = count(), by: {loglevel}"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 2: Calcular error rate por serviço\nfetch logs, from: now() - 1h\n| filter isNotNull(dt.entity.service)\n| summarize\n    total  = count(),\n    errors = countIf(loglevel == \"ERROR\"),\n    by: {dt.entity.service}\n| fields dt.entity.service, total, errors,\n         rate = round(errors / total * 100, 2)\n| sort rate, direction: \"descending\""
-    },
-    {
+      "id": "f6d752ed-6008-4833-854f-c5b4d7a29fa3",
       "type": "markdown",
-      "content": "## Funções de Agregação Disponíveis\n\n| Função | O que faz |\n|--------|----------|\n| `count()` | Conta registros |\n| `countIf(condicao)` | Conta registros que satisfazem condição |\n| `countDistinct(campo)` | Conta valores únicos |\n| `avg(campo)` | Média |\n| `sum(campo)` | Soma |\n| `min(campo)` | Mínimo |\n| `max(campo)` | Máximo |\n| `percentile(campo, %)` | Percentil (ex: 95) |"
+      "markdown": "## Timeseries — Agregação Temporal\n\nCriar uma série temporal com agregações em intervalos regulares:\n\n```dql\nfetch logs\n| summarize count() as error_count\n  by {bin(timestamp, 5m), severity}\n| sort timestamp asc\n```\n\nResultado: Uma linha **a cada 5 minutos**, mostrando count por severity.\n\n**Intervalos comuns:** `1m`, `5m`, `15m`, `1h`, `1d`"
     },
     {
+      "id": "f7d752ed-6008-4833-854f-c5b4d7a29fa4",
       "type": "markdown",
-      "content": "## 2. O Comando `makeTimeseries`\n\nAgrega **qualquer** fonte de dados em séries de tempo (logs, spans, bizevents)."
+      "markdown": "## Exemplo 1: Taxa de Erro ao Longo do Tempo\n\n```dql\nfetch logs\n| filter timestamp >= now()-2h\n| filter severity = \"ERROR\" or severity = \"WARN\"\n| summarize error_rate = count() as total_errors\n  by {bin(timestamp, 5m), severity}\n| sort timestamp asc\n```\n\nResultado: Gráfico de linha mostrando **quantidade de erros a cada 5 minutos** nos últimos 2 horas."
     },
     {
-      "type": "dql",
-      "content": "// Exemplo 3: Erros por minuto na última hora\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| makeTimeseries {\n    errors = countIf(loglevel == \"ERROR\")\n  },\n  interval: 5m"
-    },
-    {
+      "id": "f8d752ed-6008-4833-854f-c5b4d7a29fa5",
       "type": "markdown",
-      "content": "**Diferença:**\n- `timeseries` — apenas para métricas nativas\n- `makeTimeseries` — para qualquer fonte (logs, spans, bizevents)"
+      "markdown": "## Exemplo 2: Latência por Serviço\n\n```dql\nfetch spans\n| filter timestamp >= now()-1h\n| summarize \n    count() as num_spans,\n    avg(span.duration) as latencia_media,\n    percentile(span.duration, 95) as p95,\n    percentile(span.duration, 99) as p99\n  by dt.entity.service\n| sort latencia_media desc\n```\n\nResultado: Table mostrando **latência média, p95, p99 por serviço**, ordenado pelos mais lentos."
     },
     {
+      "id": "f9d752ed-6008-4833-854f-c5b4d7a29fa6",
       "type": "markdown",
-      "content": "## 3. O Comando `fields`\n\nSeleciona, renomeia e calcula campos."
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 4: Selecionar e calcular campos\nfetch logs, from: now() - 1h\n| fields\n    timestamp,\n    service = dt.entity.service,\n    duration_s = duration / 1000.0,\n    is_slow = duration > 5000,\n    health = if(duration > 5000, \"SLOW\",\n             if(duration > 1000, \"OK\", \"FAST\"))"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 5: Remover campos específicos\nfetch logs, from: now() - 1h\n| fields -trace_id, -span_id"
-    },
-    {
-      "type": "markdown",
-      "content": "## 4. O Comando `fieldsSummary`\n\nExplora **quais campos estão disponíveis** em uma fonte de dados."
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 6: Descobrir campos disponíveis em logs\nfetch logs, from: now() - 1h\n| fieldsSummary"
-    },
-    {
-      "type": "markdown",
-      "content": "## 5. O Comando `parse`\n\nExtrai campos estruturados de texto livre usando padrões GROK."
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 7: Extrair status HTTP de logs\nfetch logs, from: now() - 1h\n| parse content, \"LD 'status=' INT:status LD\"\n| filter isNotNull(status)\n| fields timestamp, status\n| limit 20"
-    },
-    {
-      "type": "markdown",
-      "content": "## Padrões GROK Comuns\n\n| Padrão | Captura | Exemplo |\n|--------|---------|----------|\n| `WORD` | Sem espaço | `ERROR`, `payment-api` |\n| `INT` | Inteiro | `200`, `500` |\n| `FLOAT` | Decimal | `3.14` |\n| `IPADDR` | IP | `192.168.1.1` |\n| `LD` | Até próx. padrão | qualquer texto |\n| `DATA` | Qualquer coisa | texto com espaços |"
-    },
-    {
-      "type": "markdown",
-      "content": "## 📝 Desafio Prático\n\nCrie uma query que:\n1. Busque logs das últimas 2 horas\n2. Conte o número de logs por `loglevel`\n3. Ordene do mais frequente para o menos frequente"
-    },
-    {
-      "type": "dql",
-      "content": "// ← Escreva sua query aqui!\n// Dica: fetch logs, from: now() - 2h\n//       | summarize count = count(), by: {loglevel}\n//       | sort count, direction: \"descending\""
-    },
-    {
-      "type": "markdown",
-      "content": "## Próximo Módulo\n\n➡️ **DQL 300 — Enriquecimento e Joins**  \nDomineentityAttr, lookup, join e append"
+      "markdown": "## Filtro vs. Summarize\n\nÉ fácil confundir. Lembre-se:\n\n- **`filter`** — Remove linhas que **não** passam na condição (1 entrada → 0 ou 1 saída)\n- **`summarize`** — Agrupa muitas linhas em poucas (N entradas → 1 saída por grupo)\n\nExemplo:\n\n```dql\nfetch logs\n| filter severity = \"ERROR\"      # Pega só ERRORs\n| summarize count()             # Conta quantos ERRORs tem\n```"
     }
   ]
 }

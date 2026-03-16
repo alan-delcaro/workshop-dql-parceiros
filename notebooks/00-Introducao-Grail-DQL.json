@@ -1,50 +1,30 @@
 {
-  "metadata": {
-    "displayName": "Módulo 00 — Introdução ao Grail e DQL",
-    "description": "Entender o Grail, o DQL e por que unificam toda a observabilidade Dynatrace",
-    "author": "Dynatrace Partner Enablement",
-    "tags": ["dql", "grail", "workshop", "introducao"]
+  "version": "7",
+  "defaultTimeframe": {
+    "from": "now()-30m",
+    "to": "now()"
   },
-  "cells": [
+  "defaultSegments": [],
+  "sections": [
     {
+      "id": "63d752ed-6008-4833-854f-c5b4d7a29fa1",
       "type": "markdown",
-      "content": "# Módulo 00 — Introdução ao Grail e DQL\n\n**Duração:** ~10 minutos  \n**Objetivo:** Entender onde o DQL se encaixa na plataforma Dynatrace e por que ele importa"
+      "markdown": "# Módulo 00 — Introdução ao Grail e DQL\n\n**Duração:** ~10 minutos  \n**Objetivo:** Entender o Grail, o DQL e por que unificam toda a observabilidade Dynatrace\n\n## O que é o Grail?\n\n**Grail** é o data lakehouse nativo da Dynatrace. Diferente dos bancos de dados tradicionais de monitoramento, o Grail foi projetado para:\n\n- **Ingerir e reter** volumes massivos de dados sem pré-agregação\n- **Indexar e buscar** logs, traces, métricas e eventos sem schema fixo\n- **Correlacionar** automaticamente dados via **Smartscape** (modelo de entidades)\n- **Escalar** elasticamente sem tuning manual"
     },
     {
+      "id": "73d752ed-6008-4833-854f-c5b4d7a29fa2",
       "type": "markdown",
-      "content": "## O que é o Grail?\n\n**Grail** é o data lakehouse nativo da Dynatrace. Diferente dos bancos de dados tradicionais de monitoramento, o Grail foi projetado para:\n\n- **Ingerir e reter** volumes massivos de dados sem pré-agregação\n- **Indexar e buscar** logs, traces, métricas e eventos sem schema fixo\n- **Correlacionar** automaticamente dados via **Smartscape** (modelo de entidades)\n- **Escalar** elasticamente sem tuning manual"
+      "markdown": "## Por que DQL Unifica Tudo?\n\nAntes: múltiplas interfaces desconectadas  \nAgora: **uma única linguagem para todas as fontes de dados**\n\n| O que você quer fazer | Antes | Com DQL |\n|---|---|---|\n| Analisar logs | Log Viewer (limitado) | `fetch logs \\| filter ...` |\n| Agregar métricas | Metrics Explorer | `timeseries avg(...)` |\n| Cruzar logs + traces | Muito difícil | `fetch spans \\| join [fetch logs]` |\n| Enriquecer com metadados | Impossível | `lookup + entityAttr` |"
     },
     {
+      "id": "83d752ed-6008-4833-854f-c5b4d7a29fa3",
       "type": "markdown",
-      "content": "## Por que DQL Unifica Tudo?\n\nAntes: múltiplas interfaces desconectadas  \nAgora: **uma única linguagem para todas as fontes de dados**\n\n| O que você quer fazer | Antes | Com DQL |\n|-----------------------|-------|----------|\n| Analisar logs | Log Viewer (limitado) | `fetch logs \\| filter ...` |\n| Agregar métricas | Metrics Explorer | `timeseries avg(...)` |\n| Cruzar logs + traces | Muito difícil | `fetch spans \\| join [fetch logs]` |\n| Enriquecer com metadados | Impossível | `lookup + entityAttr` |"
+      "markdown": "## As Três Pilares do DQL\n\n### 1. **Fontes de Dados (Record Sources)**\n- `logs` — todos os logs ingeridos\n- `spans` — todos os traces/spans\n- `events` — eventos da plataforma Dynatrace\n- `bizevents` — eventos de negócio customizados\n- `metrics` — timeseries de métrica\n- `dt.entity.*` — Smartscape: hosts, serviços, aplicações, etc.\n\n### 2. **Pipeline Model**\nCada query é um pipeline: `source | filter | summarize | sort | fields | limit`\n\nO pipe `|` passa os dados para o próximo estágio, transformando-os progressivamente.\n\n### 3. **Correlação via Smartscape**\nTodos os dados chegam com `dt.entity.*` preenchido, permitindo joins e lookups automáticos."
     },
     {
+      "id": "93d752ed-6008-4833-854f-c5b4d7a29fa4",
       "type": "markdown",
-      "content": "## Fontes de Dados (Record Sources)\n\n| Fonte | O que contém |\n|-------|-------------|\n| `logs` | Registros de log ingeridos |\n| `metrics` | Métricas de host, custom metrics |\n| `spans` | Distributed tracing spans |\n| `bizevents` | Eventos de negócio customizados |\n| `events` | Deploys, mudanças, alertas |\n| `dt.entity.*` | Modelo de entidades (hosts, services...) |"
-    },
-    {
-      "type": "markdown",
-      "content": "## Conceito de Pipeline\n\nO DQL usa um modelo de **pipeline** — cada comando transforma os dados do anterior:\n\n```dql\nfetch logs                          // 1. busca dados brutos\n| filter loglevel == \"ERROR\"        // 2. filtra apenas erros\n| summarize count = count(),        // 3. agrega\n    by: {dt.entity.service}\n| sort count, direction: \"descending\" // 4. ordena\n| limit 10                          // 5. retorna top 10\n```\n\n**Pense como um cano:** dados entram brutos, cada seção os transforma, resultado sai refinado."
-    },
-    {
-      "type": "markdown",
-      "content": "## Como acessar o Dynatrace Notebook\n\n1. No menu lateral, busque **Notebooks**\n2. Clique em **+ New Notebook**\n3. Adicione seções de **DQL query**\n\n**Atalhos úteis:**\n- `Ctrl/Cmd + Enter` — Executar query\n- `Ctrl/Cmd + Space` — Autocompletar\n- `Ctrl/Cmd + /` — Comentar linha"
-    },
-    {
-      "type": "markdown",
-      "content": "## Estrutura Básica de uma Query DQL\n\n```dql\nfetch <record_source>,           // sempre começa aqui\n    from: now() - 1h,           // janela de tempo\n    scanLimitGBytes: 1          // limite de scan (boas práticas)\n| comando2 ...\n| comando3 ...\n```\n\n**Sintaxe geral:**\n- Comandos separados por `|` (pipe)\n- Case-sensitive para nomes de campos\n- Strings entre aspas duplas: `\"valor\"`\n- Comentários com `//`\n- Campos especiais começam com `dt.`"
-    },
-    {
-      "type": "dql",
-      "content": "// Exemplo 1: Busca simples de logs\nfetch logs, from: now() - 1h\n| limit 10"
-    },
-    {
-      "type": "markdown",
-      "content": "⬆️ **Execute a query acima** (`Ctrl/Cmd + Enter`) para ver os últimos 10 logs do seu ambiente!"
-    },
-    {
-      "type": "markdown",
-      "content": "## Próximo Módulo\n\n➡️ **DQL 100 — Fundamentos**  \nDomine `fetch`, `filter`, `filterOut` e `timeseries`"
+      "markdown": "## Próximos Passos\n\nNeste módulo 01 (Fundamentos), você vai:\n1. Executar sua primeira query DQL\n2. Entender a sintaxe básica\n3. Filtrar dados de diferentes fontes\n4. Ver resultados em tempo real\n\n**Vamos lá! ➜ Próximo Módulo: DQL 100 Fundamentos**"
     }
   ]
 }

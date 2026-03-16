@@ -7,29 +7,249 @@
   "defaultSegments": [],
   "sections": [
     {
-      "id": "a3d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "id": "a1d752ed-6008-4833-854f-c5b4d7a29fa1",
       "type": "markdown",
-      "markdown": "# Módulo 01 — DQL 100: Fundamentos\n\n**Duração:** ~40 minutos  \n**Objetivo:** Escribir queries DQL básicas, entender a sintaxe, e executar buscas em logs, spans e métricas\n\n## Estrutura de uma Query DQL\n\n```dql\nfetch <source>\n| filter <condição>\n| fields <colunas>\n| limit <número>\n```\n\nCada query começa com uma **fonte de dados** (`fetch`), depois encadeia operadores com `|`."
+      "markdown": "# Módulo 01 — DQL 100: Fundamentos com Logs\n\n**Duração:** ~60 minutos  \n**Objetivo:** Aprender a estrutura básica do DQL, executar queries em logs, e dominar FETCH, FILTER e FIELDS\n\n## O que é uma Query DQL?\n\n**DQL** é uma solicitação de **leitura** para processar dados e retornar resultados.\n\nCada query DQL contém um ou mais **comandos**, cada um retornando **saída tabular** com:\n- **Registros (linhas)** — cada linha de dados\n- **Campos (colunas)** — atributos de cada registro\n\nOs comandos são sequenciados com o operador **pipe** `|`, criando um **fluxo de dados**."
     },
     {
-      "id": "b3d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "id": "a2d752ed-6008-4833-854f-c5b4d7a29fa2",
       "type": "markdown",
-      "markdown": "## Fontes de Dados Disponíveis\n\n### 1. **Logs**\n- **Source:** `fetch logs`\n- **Campos:** `content`, `severity`, `dt.source_entity`, `timestamp`, etc.\n- **Uso:** Analisar logs de aplicações, infraestrutura, eventos do sistema\n\n### 2. **Spans (Traces)**\n- **Source:** `fetch spans`\n- **Campos:** `span.name`, `span.kind`, `trace.id`, `span.duration`, `dt.entity.service`, `otel.status_code`, etc.\n- **Uso:** Análise de latência, erros, distribuição de chamadas\n\n### 3. **Métricas**\n- **Source:** `fetch metrics(\"<métrica>\")`\n- **Campos:** `value`, `timestamp`, `dt.entity.<tipo>`, dimensões customizadas\n- **Uso:** Análise de timeseries, agregações, tendências"
+      "markdown": "## Encadeando Comandos com o Pipe Operator\n\nCada comando retorna uma **tabela**. O pipe `|` **funnela essa tabela** para o próximo comando, onde é processada / filtrada / transformada.\n\n```\nDados brutos\n     ↓\n  FETCH → [Tabela 1]\n     ↓ (pipe)\n  FILTER → [Tabela 2, menor]\n     ↓ (pipe)\n  FIELDS → [Tabela 3, com menos colunas]\n     ↓\n  RESULTADO FINAL\n```\n\n**Importante:** A ordem dos operadores importa! A cada passo, os dados são refinados incrementalmente até atingir o resultado desejado."
+    },
+    {
+      "id": "a3d752ed-6008-4833-854f-c5b4d7a29fa3",
+      "type": "markdown",
+      "markdown": "## 1️⃣ FETCH — Carregando Dados\n\nO comando **FETCH** define **qual dados carregar** do Dynatrace Grail.\n\n```dql\nfetch logs\n```\n\nIsso retorna **todos os logs** disponíveis no timeframe selecionado.\n\n### Estrutura Básica:\n```dql\nfetch <source>\n```\n\n**Fontes disponíveis:**\n- `logs` — todos os logs ingeridos\n- `spans` — traces/spans\n- `events` — eventos da plataforma\n- `bizevents` — eventos de negócio customizados\n- `metrics` — timeseries de métrica"
+    },
+    {
+      "id": "a4d752ed-6008-4833-854f-c5b4d7a29fa4",
+      "type": "markdown",
+      "markdown": "## 2️⃣ Timeframe — Especificando Intervalo de Tempo\n\nPor padrão, DQL usa o timeframe da UI. Mas você pode sobrescrever com `from:` e `to:`:\n\n```dql\nfetch logs, from:now()-30m\n```\n\nOu especificar ambos:\n\n```dql\nfetch logs, from:now()-2h, to:now()-30m\n```\n\n**Formato de tempo relativo:**\n- `now()` — agora\n- `now()-30m` — há 30 minutos\n- `now()-1h` — há 1 hora\n- `now()-1d` — há 1 dia\n\n**Ou tempo absoluto:**\n```dql\nfetch logs, from:\"2024-03-16T00:00:00Z\", to:\"2024-03-16T12:00:00Z\"\n```"
+    },
+    {
+      "id": "a5d752ed-6008-4833-854f-c5b4d7a29fa5",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 1.1 — Use FETCH para Consultar Logs\n\n**Tarefa:** Execute uma query simples que vê **todos os logs disponíveis**.\n\n**Dica:** Use apenas `fetch logs`"
+    },
+    {
+      "id": "a6d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "type": "dql",
+      "title": "Exercício 1.1 - Use o comando FETCH para consultar logs",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs"
+        }
+      }
+    },
+    {
+      "id": "a7d752ed-6008-4833-854f-c5b4d7a29fa7",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 2 — Especificando Timeframe\n\n### 2.1 — Use a UI para Timeframe (últimos 30 minutos)\nNada a fazer — já aplicado!\n\n### 2.2 — Especifique Timeframe na Query (últimos 30 minutos)\nUsando `from:` na query:"
+    },
+    {
+      "id": "a8d752ed-6008-4833-854f-c5b4d7a29fa8",
+      "type": "dql",
+      "title": "Exercício 2.2 - Especifique timeframe na query (últimos 30 minutos)",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs, from:now()-30m"
+        }
+      }
+    },
+    {
+      "id": "a9d752ed-6008-4833-854f-c5b4d7a29fa9",
+      "type": "markdown",
+      "markdown": "### 2.3 — Especifique Timeframe na Query (últimas 2 horas, excluindo últimos 30 minutos)\n\nUsando `from:` e `to:` para um intervalo customizado:"
+    },
+    {
+      "id": "b0d752ed-6008-4833-854f-c5b4d7a29fa0",
+      "type": "dql",
+      "title": "Exercício 2.3 - Timeframe customizado (2h atrás, menos 30 min recentes)",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs, from:now()-2h, to:now()-30m"
+        }
+      }
+    },
+    {
+      "id": "b1d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "type": "markdown",
+      "markdown": "## 3️⃣ FILTER — Filtrando Registros\n\nReduz dados usando **condições**. Mantém apenas linhas que **passam** no teste.\n\n```dql\nfetch logs\n| filter loglevel == \"ERROR\"\n```\n\nAgora vemos apenas logs com `loglevel = ERROR`.\n\n### Operadores Comuns:\n| Operador | Significado |\n|---|---|\n| `==` | igual |\n| `!=` | não igual |\n| `>`, `<`, `>=`, `<=` | maior/menor que |\n| `contains()` | contém string |\n| `matchesPhrase()` | busca por frase |\n| `endsWith()` | termina com |\n| `and`, `or`, `not` | lógica booleana |"
+    },
+    {
+      "id": "b2d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 3 — Filtrando Logs\n\n### 3.1 — Query apenas logs de ERROR"
+    },
+    {
+      "id": "b3d752ed-6008-4833-854f-c5b4d7a29fa3",
+      "type": "dql",
+      "title": "Exercício 3.1 - Query apenas logs de ERROR",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter loglevel == \"ERROR\""
+        }
+      }
+    },
+    {
+      "id": "b4d752ed-6008-4833-854f-c5b4d7a29fa4",
+      "type": "markdown",
+      "markdown": "### 3.2 — Query logs de ERROR E WARN"
+    },
+    {
+      "id": "b5d752ed-6008-4833-854f-c5b4d7a29fa5",
+      "type": "dql",
+      "title": "Exercício 3.2 - Query logs de ERROR ou WARN",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter loglevel == \"ERROR\" or loglevel == \"WARN\""
+        }
+      }
+    },
+    {
+      "id": "b6d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "type": "markdown",
+      "markdown": "### 3.3 — Query logs de ERROR/WARN do namespace 'prod'"
+    },
+    {
+      "id": "b7d752ed-6008-4833-854f-c5b4d7a29fa7",
+      "type": "dql",
+      "title": "Exercício 3.3 - ERROR/WARN do namespace 'prod'",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter (loglevel == \"ERROR\" or loglevel == \"WARN\") and k8s.namespace.name == \"prod\""
+        }
+      }
+    },
+    {
+      "id": "b8d752ed-6008-4833-854f-c5b4d7a29fa8",
+      "type": "markdown",
+      "markdown": "### 3.4 — Query logs de 'prod', mas EXCLUINDO containers nginx"
+    },
+    {
+      "id": "b9d752ed-6008-4833-854f-c5b4d7a29fa9",
+      "type": "dql",
+      "title": "Exercício 3.4 - namespace 'prod', excluindo nginx",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.namespace.name == \"prod\" and k8s.container.name != \"nginx\""
+        }
+      }
+    },
+    {
+      "id": "c0d752ed-6008-4833-854f-c5b4d7a29fa0",
+      "type": "markdown",
+      "markdown": "### 3.5 — Query logs contendo \"AddItemAsync\""
+    },
+    {
+      "id": "c1d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "type": "dql",
+      "title": "Exercício 3.5 - Query logs contendo 'AddItemAsync'",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter matchesPhrase(content, \"AddItemAsync\")"
+        }
+      }
+    },
+    {
+      "id": "c2d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "type": "markdown",
+      "markdown": "## 4️⃣ FIELDS — Selecionando Colunas\n\nO Dynatrace enriquece logs com muitos campos de topologia. Às vezes queremos ver **apenas alguns**.\n\nO comando **FIELDS** seleciona quais colunas aparecer:\n\n```dql\nfetch logs\n| fields timestamp, loglevel, content\n```\n\nOu **remover** colunas específicas:\n\n```dql\nfetch logs\n| fieldsRemove log.source\n```"
     },
     {
       "id": "c3d752ed-6008-4833-854f-c5b4d7a29fa3",
       "type": "markdown",
-      "markdown": "## Operadores Fundamentais\n\n### `filter` — Selecionar Linhas\nFiltrar dados baseado em condições:\n\n```dql\nfetch logs\n| filter content contains \"ERROR\"\n| filter severity = \"ERROR\" or severity = \"WARN\"\n| filter timestamp >= now()-1h\n```\n\n### `fields` — Selecionar Colunas\nEscolher quais campos aparecem no resultado:\n\n```dql\nfetch logs\n| fields timestamp, severity, content\n```\n\n### `limit` — Limitar Resultado\nMostrar apenas N primeiras linhas:\n\n```dql\nfetch logs\n| limit 10\n```"
+      "markdown": "## 📋 Exercício 4 — Selecionando Campos\n\n### 4.1 — Query logs com APENAS timestamp, loglevel, content"
     },
     {
-      "id": "d3d752ed-6008-4833-854f-c5b4d7a29fa4",
-      "type": "markdown",
-      "markdown": "## Operadores de Agregação\n\n### `summarize` — Agrupar e Agregar\nContar, somar, calcular média, etc.:\n\n```dql\nfetch logs\n| filter severity = \"ERROR\"\n| summarize count() by severity\n```\n\nThis groups logs by severity and counts each group.\n\n### `sort` — Ordenar\nOrdenar resultado por um ou mais campos:\n\n```dql\nfetch spans\n| sort span.duration desc\n| limit 10\n```"
+      "id": "c4d752ed-6008-4833-854f-c5b4d7a29fa4",
+      "type": "dql",
+      "title": "Exercício 4.1 - Query com APENAS campos específicos",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| fields timestamp, loglevel, content"
+        }
+      }
     },
     {
-      "id": "e3d752ed-6008-4833-854f-c5b4d7a29fa5",
+      "id": "c5d752ed-6008-4833-854f-c5b4d7a29fa5",
       "type": "markdown",
-      "markdown": "## Exemplo Prático: Dashboard de Erros\n\nVocê quer: \"Mostrar os 10 piores logs dos últimos 30 minutos, agrupados por severity\"\n\n```dql\nfetch logs\n| filter timestamp >= now()-30m\n| filter severity = \"ERROR\" or severity = \"WARN\"\n| sort timestamp desc\n| limit 10\n```\n\nResultado: Table com timestamp, severity, content (últimos 10 erros/warnings recentes)"
+      "markdown": "### 4.2 — Query todos os campos, MAS REMOVE log.source"
+    },
+    {
+      "id": "c6d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "type": "dql",
+      "title": "Exercício 4.2 - Query com todos os campos EXCETO log.source",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-30m",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| fieldsRemove log.source"
+        }
+      }
+    },
+    {
+      "id": "c7d752ed-6008-4833-854f-c5b4d7a29fa7",
+      "type": "markdown",
+      "markdown": "## ✅ Resumo — DQL 100 Fundamentos\n\nVocê agora conhece:\n\n✅ **FETCH** — carregar dados de uma fonte  \n✅ **Timeframe** — especificar intervalo de tempo  \n✅ **FILTER** — filtraar registros por condição  \n✅ **FIELDS** — selecionar/remover colunas  \n✅ **Pipe operator** `|` — encadear transformações\n\n**Próximo:** Módulo 02 - Agregação (SUMMARIZE, makeTimeseries, SORT, LIMIT)"
     }
   ]
 }

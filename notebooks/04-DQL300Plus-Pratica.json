@@ -1,0 +1,245 @@
+{
+  "version": "7",
+  "defaultTimeframe": {
+    "from": "now()-1h",
+    "to": "now()"
+  },
+  "defaultSegments": [],
+  "sections": [
+    {
+      "id": "g0d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "type": "markdown",
+      "markdown": "# Módulo 04 — DQL 300+: Parsing, Extração e Visualização Prática\n\n**Duração:** ~60 minutos  \n**Objetivo:** Dominar `PARSE` para extrair dados estruturados de logs, e criar visualizações ricas (Single Value, Line Charts, Pie Charts)\n\n**Pré-requisito:** Módulos 01-03 (Fundamentos, Agregação, Correlação)\n\n## O Poder do PARSE\n\nMuitos logs contêm dados **estruturados dentro do texto** que não são campos simples.\n\n**Exemplo de log bruto:**\n```\n2024-03-16 10:15:23 AddItemAsync: userId=42839, productId=SKU-5472, quantity=3\n```\n\nO comando **PARSE** **extrai** dados estruturados de strings usando **padrões/regex**."
+    },
+    {
+      "id": "g1d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "type": "markdown",
+      "markdown": "## 1️⃣ PARSE — Extraindo Dados Estruturados\n\n### Sintaxe Básica:\n```dql\nparse <campo>, \"<padrão>:<tipo>:<alias>\"\n```\n\n### Tipos de Parser:\n| Tipo | O que faz | Exemplo |\n|---|---|---|\n| `INT` | Inteiro | `INT:quantity` |\n| `LD` | Literal Decimal | `LD:userId` |\n| `DOUBLE` | Número com decimal | `DOUBLE:temperatura` |\n| `ANYTHING` | Qualquer string | `ANYTHING:message` |\n\n### Exemplo Simples:\n```dql\nfetch logs\n| filter matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'quantity='INT:quantity\"\n| fields quantity, content\n```"
+    },
+    {
+      "id": "g2d752ed-6008-4833-854f-c5b4d7a29fa3",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 1 — Parsing Múltiplos Campos\n\nVamos extrair `userId`, `productId` e `quantity` de logs da função `AddItemAsync`.\n\n### 1.1 — Parse quantity"
+    },
+    {
+      "id": "g3d752ed-6008-4833-854f-c5b4d7a29fa4",
+      "type": "dql",
+      "title": "Exercício 1.1 - Parse quantity",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'quantity='INT:quantity\"\n| fields quantity, content"
+        }
+      }
+    },
+    {
+      "id": "g4d752ed-6008-4833-854f-c5b4d7a29fa5",
+      "type": "markdown",
+      "markdown": "### 1.2 — Parse userId"
+    },
+    {
+      "id": "g5d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "type": "dql",
+      "title": "Exercício 1.2 - Parse userId",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'userId='LD:userId ','\"\n| fields userId, content"
+        }
+      }
+    },
+    {
+      "id": "g6d752ed-6008-4833-854f-c5b4d7a29fa7",
+      "type": "markdown",
+      "markdown": "### 1.3 — Parse productId"
+    },
+    {
+      "id": "g7d752ed-6008-4833-854f-c5b4d7a29fa8",
+      "type": "dql",
+      "title": "Exercício 1.3 - Parse productId",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'productId='LD:productId ','\"\n| fields productId, content"
+        }
+      }
+    },
+    {
+      "id": "g8d752ed-6008-4833-854f-c5b4d7a29fa9",
+      "type": "markdown",
+      "markdown": "### 1.4 — Parse todos os 3 (userId, productId, quantity)\n\nUsando **3 comandos PARSE** sequenciais:"
+    },
+    {
+      "id": "g9d752ed-6008-4833-854f-c5b4d7a29fa10",
+      "type": "dql",
+      "title": "Exercício 1.4 - Parse tudo com 3 comandos",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'userId='LD:userId','\"\n| parse content, \"LD 'productId='LD:productId','\"\n| parse content, \"LD 'quantity='INT:quantity\"\n| fields userId, productId, quantity"
+        }
+      }
+    },
+    {
+      "id": "h0d752ed-6008-4833-854f-c5b4d7a29fa11",
+      "type": "markdown",
+      "markdown": "### 1.5 — Parse todos os 3 (userId, productId, quantity)\n\nUsando **1 comando PARSE** com padrão complexo (mais eficiente!):"
+    },
+    {
+      "id": "h1d752ed-6008-4833-854f-c5b4d7a29fa12",
+      "type": "dql",
+      "title": "Exercício 1.5 - Parse tudo com 1 comando",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'userId='LD:userId', productId='LD:productId', quantity='INT:quantity\"\n| fields userId, productId, quantity"
+        }
+      }
+    },
+    {
+      "id": "h2d752ed-6008-4833-854f-c5b4d7a29fa13",
+      "type": "markdown",
+      "markdown": "## 2️⃣ Visualizações — Single Value, Line Chart, Pie Chart\n\nDepois de **extrair e agregar** dados, você pode **visualizar** em diferentes formatos.\n\nO Dynatrace Notebook suporta:\n- **Single Value** — um número grande (ex: total de vendas)\n- **Line Chart** — série temporal\n- **Pie Chart** — distribuição por categoria\n- **Table** — dados tabulares (padrão)"
+    },
+    {
+      "id": "h3d752ed-6008-4833-854f-c5b4d7a29fa14",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 2 — Visualizando Dados Extraídos\n\n### 2.1 — Single Value: Quantidade Total de Items\n\nVamos agregar para um único número: **total de quantity**"
+    },
+    {
+      "id": "h4d752ed-6008-4833-854f-c5b4d7a29fa15",
+      "type": "dql",
+      "title": "Exercício 2.1 - Single Value: Quantity Total",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'userId='LD:userId', productId='LD:productId', quantity='INT:quantity\"\n| fields userId, productId, quantity\n| summarize sum(quantity), Alias:Quantity"
+        }
+      }
+    },
+    {
+      "id": "h5d752ed-6008-4833-854f-c5b4d7a29fa16",
+      "type": "markdown",
+      "markdown": "### 2.2 — Line Chart: Quantidade ao Longo do Tempo\n\nUsando `makeTimeseries` para criar uma série temporal"
+    },
+    {
+      "id": "h6d752ed-6008-4833-854f-c5b4d7a29fa17",
+      "type": "dql",
+      "title": "Exercício 2.2 - Line Chart: Quantity ao longo do tempo",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'userId='LD:userId', productId='LD:productId', quantity='INT:quantity\"\n| fields userId, productId, quantity, timestamp\n| makeTimeseries sum(quantity), Alias:Quantity"
+        }
+      }
+    },
+    {
+      "id": "h7d752ed-6008-4833-854f-c5b4d7a29fa18",
+      "type": "markdown",
+      "markdown": "### 2.3 — Pie Chart: Quantidade por Product ID\n\nAgrupando por `productId` para ver distribução de vendas por produto"
+    },
+    {
+      "id": "h8d752ed-6008-4833-854f-c5b4d7a29fa19",
+      "type": "dql",
+      "title": "Exercício 2.3 - Pie Chart: Quantity by Product ID",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter k8s.container.name == \"server\" and matchesPhrase(content, \"AddItemAsync\")\n| parse content, \"LD 'userId='LD:userId', productId='LD:productId', quantity='INT:quantity\"\n| fields userId, productId, quantity\n| summarize sum(quantity), Alias:Quantity, by: {productId}"
+        }
+      }
+    },
+    {
+      "id": "h9d752ed-6008-4833-854f-c5b4d7a29fa20",
+      "type": "markdown",
+      "markdown": "## 3️⃣ Bonus: Parsing JSON\n\nMuitos logs modernos contêm **JSON estruturado**. PARSE pode extrair campos JSON diretamente.\n\n```dql\nfetch logs\n| parse content, \"JSON:jsonContent\"\n| fields \n    timestamp,\n    method = jsonContent[method],\n    uri = jsonContent[uri],\n    status = jsonContent[status]\n```"
+    },
+    {
+      "id": "i0d752ed-6008-4833-854f-c5b4d7a29fa21",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 3 — Parsing JSON\n\n### 3.1 — Fetch Logs JSON\n\nCarregar logs JSON de um serviço específico:"
+    },
+    {
+      "id": "i1d752ed-6008-4833-854f-c5b4d7a29fa22",
+      "type": "dql",
+      "title": "Exercício 3.1 - Fetch JSON Logs",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter log.source == \"Container Output\" and contains(content, \"unguard-status-service\")\n| parse content, \"JSON:jsonContent\""
+        }
+      }
+    },
+    {
+      "id": "i2d752ed-6008-4833-854f-c5b4d7a29fa23",
+      "type": "markdown",
+      "markdown": "### 3.2 — Parse JSON e Extrair Campos HTTP\n\nExtrair method, uri, status, bytes, latency do JSON:"
+    },
+    {
+      "id": "i3d752ed-6008-4833-854f-c5b4d7a29fa24",
+      "type": "dql",
+      "title": "Exercício 3.2 - Parse JSON e extrair campos HTTP",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-1h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter log.source == \"Container Output\" and contains(content, \"unguard-status-service\")\n| parse content, \"JSON:jsonContent\"\n| fields timestamp,\n    method = jsonContent[method],\n    uri = jsonContent[uri],\n    status = jsonContent[status],\n    bytesin = jsonContent[bytes_in],\n    bytesout = jsonContent[bytes_out],\n    latency = jsonContent[latency]"
+        }
+      }
+    },
+    {
+      "id": "i4d752ed-6008-4833-854f-c5b4d7a29fa25",
+      "type": "markdown",
+      "markdown": "## ✅ Resumo — DQL 300+: Parsing e Visualização\n\nVocê agora conhece:\n\n✅ **PARSE** — extrair dados estruturados de strings  \n✅ **Padrões simples** — INT, LD, DOUBLE, ANYTHING  \n✅ **Parser múltiplos campos** — com 1 ou N comandos  \n✅ **PARSE JSON** — extrair campos de JSON logs  \n✅ **Visualizações** — Single Value, Line Chart, Pie Chart  \n\n## 🎉 Parabéns!\n\nVocê agora domina:\n- ✅ DQL 100: FETCH, FILTER, FIELDS\n- ✅ DQL 200: SUMMARIZE, makeTimeseries, SORT, LIMIT\n- ✅ DQL 300: JOIN, LOOKUP, Correlação\n- ✅ DQL 300+: PARSE, Visualizações\n\n**Próximo passos:** Explore a documentação oficial, construa seus próprios dashboards, e crie alertas baseados em DQL!"
+    }
+  ]
+}

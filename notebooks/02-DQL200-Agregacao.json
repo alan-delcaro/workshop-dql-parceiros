@@ -7,34 +7,202 @@
   "defaultSegments": [],
   "sections": [
     {
-      "id": "f4d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "id": "d1d752ed-6008-4833-854f-c5b4d7a29fa1",
       "type": "markdown",
-      "markdown": "# Módulo 02 — DQL 200: Agregação e Timeseries\n\n**Duração:** ~40 minutos  \n**Objetivo:** Dominar `summarize`, `timeseries`, e criar dashboards com dados agregados\n\n## Operador `summarize` em Profundidade\n\nAgrega dados em grupos, aplicando funções a cada grupo:\n\n```dql\nfetch logs\n| summarize count() as num_logs, \n            avg(duration) as tempo_medio \n  by severity\n```\n\nResultado:\n| severity | num_logs | tempo_medio |\n|---|---|---|\n| ERROR | 1,234 | 125ms |\n| WARN | 5,678 | 45ms |\n| INFO | 98,765 | 5ms |"
+      "markdown": "# Módulo 02 — DQL 200: Agregação e Timeseries\n\n**Duração:** ~50 minutos  \n**Objetivo:** Dominar `SUMMARIZE`, `makeTimeseries`, `SORT` e `LIMIT` para análise agregada\n\n## 1️⃣ SUMMARIZE — Agrupando e Agregando\n\n**SUMMARIZE** agrupa muitos registros em **poucas linhas**, aplicando funções.\n\n```dql\nfetch logs\n| summarize count = count(), by: {loglevel}\n```\n\nResultado: Um registro **por cada valor único de `loglevel`**, com a contagem total.\n\n### Estrutura:\n```dql\nsummarize <função>() as <alias>, by: {<campos_de_grupo>}\n```"
     },
     {
-      "id": "f5d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "id": "d2d752ed-6008-4833-854f-c5b4d7a29fa2",
       "type": "markdown",
-      "markdown": "## Funções de Agregação\n\n| Função | Descrição | Exemplo |\n|---|---|---|\n| `count()` | Contar linhas | `summarize count() by severity` |\n| `count_distinct()` | Contar valores únicos | `summarize count_distinct(dt.entity.service)` |\n| `sum()` | Somar valores | `summarize sum(bytes_sent)` |\n| `avg()` | Média | `summarize avg(response_time)` |\n| `min()` / `max()` | Min/Max | `summarize min(latency), max(latency)` |\n| `percentile()` | Percentil (p50, p95, p99) | `summarize percentile(duration, 95) as p95` |\n| `unique_values()` | Lista valores únicos | `summarize unique_values(host_name)` |"
+      "markdown": "## Funções de Agregação\n\n| Função | O que faz |\n|---|---|\n| `count()` | Contar registros |\n| `count_distinct()` | Contar valores ÚNICOS |\n| `sum()` | Somar valores |\n| `avg()` | Média |\n| `min()` / `max()` | Mínimo / Máximo |\n| `percentile()` | Percentil (p50, p95, p99) |\n| `unique_values()` | Lista valores únicos |\n\n### Exemplo:\n```dql\nfetch logs\n| summarize \n    total = count(),\n    hosts_unicos = count_distinct(host.name)\n  by: {loglevel}\n```"
     },
     {
-      "id": "f6d752ed-6008-4833-854f-c5b4d7a29fa3",
+      "id": "d3d752ed-6008-4833-854f-c5b4d7a29fa3",
       "type": "markdown",
-      "markdown": "## Timeseries — Agregação Temporal\n\nCriar uma série temporal com agregações em intervalos regulares:\n\n```dql\nfetch logs\n| summarize count() as error_count\n  by {bin(timestamp, 5m), severity}\n| sort timestamp asc\n```\n\nResultado: Uma linha **a cada 5 minutos**, mostrando count por severity.\n\n**Intervalos comuns:** `1m`, `5m`, `15m`, `1h`, `1d`"
+      "markdown": "## 📋 Exercício 1 — Agregação Básica\n\n### 1.1 — Contar logs por Level"
     },
     {
-      "id": "f7d752ed-6008-4833-854f-c5b4d7a29fa4",
-      "type": "markdown",
-      "markdown": "## Exemplo 1: Taxa de Erro ao Longo do Tempo\n\n```dql\nfetch logs\n| filter timestamp >= now()-2h\n| filter severity = \"ERROR\" or severity = \"WARN\"\n| summarize error_rate = count() as total_errors\n  by {bin(timestamp, 5m), severity}\n| sort timestamp asc\n```\n\nResultado: Gráfico de linha mostrando **quantidade de erros a cada 5 minutos** nos últimos 2 horas."
+      "id": "d4d752ed-6008-4833-854f-c5b4d7a29fa4",
+      "type": "dql",
+      "title": "Exercício 1.1 - Logs por Level (conta)",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| summarize count = count(), by: {loglevel}"
+        }
+      }
     },
     {
-      "id": "f8d752ed-6008-4833-854f-c5b4d7a29fa5",
+      "id": "d5d752ed-6008-4833-854f-c5b4d7a29fa5",
       "type": "markdown",
-      "markdown": "## Exemplo 2: Latência por Serviço\n\n```dql\nfetch spans\n| filter timestamp >= now()-1h\n| summarize \n    count() as num_spans,\n    avg(span.duration) as latencia_media,\n    percentile(span.duration, 95) as p95,\n    percentile(span.duration, 99) as p99\n  by dt.entity.service\n| sort latencia_media desc\n```\n\nResultado: Table mostrando **latência média, p95, p99 por serviço**, ordenado pelos mais lentos."
+      "markdown": "### 1.2 — Contar logs por Level com Alias mais simples"
     },
     {
-      "id": "f9d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "id": "d6d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "type": "dql",
+      "title": "Exercício 1.2 - Logs por Level com Alias",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| summarize count = count(), by: {level = loglevel}"
+        }
+      }
+    },
+    {
+      "id": "d7d752ed-6008-4833-854f-c5b4d7a29fa7",
       "type": "markdown",
-      "markdown": "## Filtro vs. Summarize\n\nÉ fácil confundir. Lembre-se:\n\n- **`filter`** — Remove linhas que **não** passam na condição (1 entrada → 0 ou 1 saída)\n- **`summarize`** — Agrupa muitas linhas em poucas (N entradas → 1 saída por grupo)\n\nExemplo:\n\n```dql\nfetch logs\n| filter severity = \"ERROR\"      # Pega só ERRORs\n| summarize count()             # Conta quantos ERRORs tem\n```"
+      "markdown": "### 1.3 — Logs por Level E Host, removendo NONE\n\nAgora agrupamos por **dois campos**: `loglevel` e `host.name`"
+    },
+    {
+      "id": "d8d752ed-6008-4833-854f-c5b4d7a29fa8",
+      "type": "dql",
+      "title": "Exercício 1.3 - Logs por level e host (remove NONE)",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filterOut loglevel == \"NONE\"\n| summarize count = count(), by: {loglevel, host.name}"
+        }
+      }
+    },
+    {
+      "id": "d9d752ed-6008-4833-854f-c5b4d7a29fa9",
+      "type": "markdown",
+      "markdown": "## 2️⃣ makeTimeseries — Agregação Temporal\n\nDividir o timeframe em **intervalos regulares** (1m, 5m, 15m, 1h) e agregar cada intervalo.\n\n```dql\nfetch logs\n| filter loglevel == \"ERROR\"\n| makeTimeseries errorcount = count()\n```\n\nResultado: Uma linha **a cada intervalo** (padrão = 1m), mostrando count de ERRORs.\n\n### Estrutura:\n```dql\nmakeTimeseries <função>() as <alias>, by: {<grupos>}, interval:<intervalo>\n```"
+    },
+    {
+      "id": "e0d752ed-6008-4833-854f-c5b4d7a29fa0",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 1.4 — Timeseries de Erros\n\n### 1.4 — Logs de ERROR ao longo do tempo\n\nMostra **quantidade de ERRORs a cada minuto** (intervalo padrão)"
+    },
+    {
+      "id": "e1d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "type": "dql",
+      "title": "Exercício 1.4 - Logs de ERROR ao longo do tempo",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter loglevel == \"ERROR\"\n| makeTimeseries errorcount = count()"
+        }
+      }
+    },
+    {
+      "id": "e2d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "type": "markdown",
+      "markdown": "### 1.5 — Logs por Level ao longo do tempo\n\nMostra **cada level** em sua própria linha de tempo"
+    },
+    {
+      "id": "e3d752ed-6008-4833-854f-c5b4d7a29fa3",
+      "type": "dql",
+      "title": "Exercício 1.5 - Logs por level ao longo do tempo",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| makeTimeseries count(), by: {loglevel}"
+        }
+      }
+    },
+    {
+      "id": "e4d752ed-6008-4833-854f-c5b4d7a29fa4",
+      "type": "markdown",
+      "markdown": "### 1.6 — Logs por Level com intervalo de 5 minutos\n\nNeste caso, agrupamos em **buckets de 5 minutos** em vez de 1 minuto"
+    },
+    {
+      "id": "e5d752ed-6008-4833-854f-c5b4d7a29fa5",
+      "type": "dql",
+      "title": "Exercício 1.6 - Logs por level, intervalo de 5 min",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| makeTimeseries count(), by: {loglevel}, interval:5m"
+        }
+      }
+    },
+    {
+      "id": "e6d752ed-6008-4833-854f-c5b4d7a29fa6",
+      "type": "markdown",
+      "markdown": "## 3️⃣ SORT — Ordenando Resultados\n\nOrdenar resultado por um ou mais campos:\n\n```dql\nfetch logs\n| sort timestamp desc      # Descending (mais recentes primeiro)\n| sort loglevel asc        # Ascending (A-Z, menor-maior)\n```\n\n**Padrão:** `asc` (crescente)."
+    },
+    {
+      "id": "e7d752ed-6008-4833-854f-c5b4d7a29fa7",
+      "type": "markdown",
+      "markdown": "## 4️⃣ LIMIT — Limitando Resultados\n\nMostrar apenas as **N primeiras linhas**:\n\n```dql\nfetch logs\n| limit 10        # Mostrar apenas 10 linhas\n```"
+    },
+    {
+      "id": "e8d752ed-6008-4833-854f-c5b4d7a29fa8",
+      "type": "markdown",
+      "markdown": "## 📋 Exercício 2 — SORT + LIMIT\n\n### 2.1 — Top 5 Logs de ERROR Mais Recentes\n\nCombinamos:\n1. **FILTER** para pegar ERRORs\n2. **SORT** por timestamp descending (mais recentes primeiro)\n3. **LIMIT** para top 5"
+    },
+    {
+      "id": "e9d752ed-6008-4833-854f-c5b4d7a29fa9",
+      "type": "dql",
+      "title": "Exercício 2.1 - Top 5 ERROR logs mais recentes",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter loglevel == \"ERROR\"\n| sort timestamp desc\n| limit 5"
+        }
+      }
+    },
+    {
+      "id": "f0d752ed-6008-4833-854f-c5b4d7a29fa0",
+      "type": "markdown",
+      "markdown": "### 2.2 — Contagem de DEBUG por Source (Ascending)\n\nCombinamos:\n1. **FILTER** para pegar DEBUGs\n2. **SUMMARIZE** por source\n3. **SORT** ascending (menores contagens primeiro)"
+    },
+    {
+      "id": "f1d752ed-6008-4833-854f-c5b4d7a29fa1",
+      "type": "dql",
+      "title": "Exercício 2.2 - Contagem DEBUG por source (ascending)",
+      "showTitle": true,
+      "height": 300,
+      "state": {
+        "input": {
+          "timeframe": {
+            "from": "now()-2h",
+            "to": "now()"
+          },
+          "value": "fetch logs\n| filter loglevel == \"DEBUG\"\n| summarize count = count(), by: {log.source}\n| sort count"
+        }
+      }
+    },
+    {
+      "id": "f2d752ed-6008-4833-854f-c5b4d7a29fa2",
+      "type": "markdown",
+      "markdown": "## ✅ Resumo — DQL 200 Agregação\n\nVocê agora conhece:\n\n✅ **SUMMARIZE** — agrupar e agregar dados  \n✅ **Funções de agregação** — count(), avg(), sum(), percentile(), etc.  \n✅ **makeTimeseries** — criar séries temporais  \n✅ **SORT** — ordenar por qualquer campo  \n✅ **LIMIT** — limitar número de linhas  \n\n**Próximo:** Módulo 03 - Correlação e Análise Avançada"
     }
   ]
 }

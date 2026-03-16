@@ -1,0 +1,94 @@
+{
+  "metadata": {
+    "displayName": "Módulo 01 — DQL 100: Fundamentos",
+    "description": "Dominar fetch, filter, filterOut, timeseries — os comandos básicos para buscar e filtrar dados",
+    "author": "Dynatrace Partner Enablement",
+    "tags": ["dql", "dql-100", "fetch", "filter", "workshop"]
+  },
+  "cells": [
+    {
+      "type": "markdown",
+      "content": "# DQL 100 — Fundamentos\n\n**Duração:** ~25 minutos  \n**Objetivo:** Dominar os comandos básicos para buscar, filtrar e limitar dados no Grail"
+    },
+    {
+      "type": "markdown",
+      "content": "## 1. O Comando `fetch`\n\nO `fetch` é o **ponto de partida** de quase toda query DQL."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 1: Buscar logs da última hora\nfetch logs, from: now() - 1h"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 2: Buscar métricas dos últimos 30 minutos\nfetch metrics, from: now() - 30m"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 3: Buscar spans dos últimos 7 dias\nfetch spans, from: now() - 7d"
+    },
+    {
+      "type": "markdown",
+      "content": "## 2. O Comando `filter`\n\nO `filter` mantém apenas os registros que **satisfazem** a condição."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 4: Filtrar apenas logs de ERROR\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\""
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 5: Combinar múltiplos filtros\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| filter isNotNull(dt.entity.service)"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 6: Usar IN para filtrar por lista\nfetch logs, from: now() - 1h\n| filter loglevel in [\"ERROR\", \"WARN\", \"CRITICAL\"]"
+    },
+    {
+      "type": "markdown",
+      "content": "## 3. O Comando `filterOut`\n\nO `filterOut` **exclui** os registros que satisfazem a condição — é o inverso do `filter`."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 7: Excluir logs de healthcheck\nfetch logs, from: now() - 1h\n| filterOut contains(content, \"/health\") or contains(content, \"/ping\")"
+    },
+    {
+      "type": "markdown",
+      "content": "## 4. Funções de Match em Strings\n\n| Função | Uso |\n|--------|-----|\n| `contains(campo, \"val\")` | Substring simples |\n| `matchesValue(campo, \"val*\")` | Com wildcards (*, ?) |\n| `matchesPhrase(campo, \"frase\")` | Frase em texto livre |\n| `startsWith` / `endsWith` | Prefixo / sufixo |"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 8: Buscar com contains\nfetch logs, from: now() - 1h\n| filter contains(content, \"NullPointerException\")"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 9: Buscar com matchesValue (wildcard)\nfetch logs, from: now() - 1h\n| filter matchesValue(dt.entity.service_name, \"payment*\")"
+    },
+    {
+      "type": "markdown",
+      "content": "## 5. Controlos de Volume\n\n- `limit N` — retorna apenas N registros\n- `samplingRatio X` — amostra aleatória (X:0-1)\n- `scanLimitGBytes: N` — limita o scan real"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 10: Limitar saída a 100 registros\nfetch logs, from: now() - 1h\n| limit 100"
+    },
+    {
+      "type": "markdown",
+      "content": "## 6. O Comando `timeseries`\n\nAgrega métricas e eventos em séries de tempo."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 11: Média de CPU por host, a cada 5 minutos\ntimeseries {\n    avg_cpu = avg(dt.host.cpu.usage)\n},\n    interval: 5m,\n    from: now() - 2h"
+    },
+    {
+      "type": "markdown",
+      "content": "## 📝 Exercício Prático\n\nTente criar uma query que:\n1. Busque logs das últimas 2 horas\n2. Filtre apenas ERROR e WARN\n3. Retorne no máximo 50 registros"
+    },
+    {
+      "type": "dql",
+      "content": "// ← Escreva sua query aqui!\n// Dica: fetch logs, from: now() - 2h\n//       | filter ...\n//       | limit 50"
+    },
+    {
+      "type": "markdown",
+      "content": "## Próximo Módulo\n\n➡️ **DQL 200 — Agregação e Parsing**  \nDomineSummarize, makeTimeseries, fields e parse"
+    }
+  ]
+}

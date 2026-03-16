@@ -1,0 +1,82 @@
+{
+  "metadata": {
+    "displayName": "Módulo 03 — DQL 300: Enriquecimento e Joins",
+    "description": "Dominar entityAttr, lookup, join e append para conectar dados de múltiplas fontes",
+    "author": "Dynatrace Partner Enablement",
+    "tags": ["dql", "dql-300", "avancado", "lookup", "join", "workshop"]
+  },
+  "cells": [
+    {
+      "type": "markdown",
+      "content": "# DQL 300 — Enriquecimento e Joins\n\n**Duração:** ~25 minutos  \n**Objetivo:** Conectar dados de múltiplas fontes e enriquecer com metadados"
+    },
+    {
+      "type": "markdown",
+      "content": "## O Problema dos Entity IDs\n\nLogs contêm IDs opacos:\n```\ndt.entity.service = \"SERVICE-ABCD1234\"  ← inútil\n```\n\nQueremos:\n```\nservice_name = \"payment-service-prod\"  ← legível!\n```\n\n**3 soluções:** `entityAttr` | `lookup` | `join`"
+    },
+    {
+      "type": "markdown",
+      "content": "## 1. O Comando `entityAttr`\n\nResolve **1-2 atributos** de entidade de forma inline."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 1: Resolver nomes de serviços\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| fields\n    timestamp,\n    service = entityAttr(dt.entity.service, \"entity.name\"),\n    host    = entityAttr(dt.entity.host, \"entity.name\")\n| sort timestamp, direction: \"descending\"\n| limit 30"
+    },
+    {
+      "type": "markdown",
+      "content": "## 2. O Comando `lookup`\n\nEnriquece com **múltiplos atributos** usando uma segunda query."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 2: Lookup com metadados de serviço\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| summarize errors = count(), by: {service_id = dt.entity.service}\n\n| lookup [\n    fetch dt.entity.service\n    | fields entity.id, entity.name, lifecycleState, tags\n  ],\n  sourceField: service_id,\n  lookupField: entity.id\n\n| fields entity.name, errors, lifecycleState\n| sort errors, direction: \"descending\""
+    },
+    {
+      "type": "markdown",
+      "content": "## 3. O Comando `data`\n\nCria uma tabela de referência inline para usar com `lookup`."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 3: Tabela de mapeamento de HTTP status\nfetch logs, from: now() - 2h\n| parse content, \"LD 'status=' INT:code LD\"\n| lookup [\n    data record(code: 200, label: \"Success\"),\n         record(code: 400, label: \"Bad Request\"),\n         record(code: 401, label: \"Unauthorized\"),\n         record(code: 500, label: \"Server Error\"),\n         record(code: 503, label: \"Unavailable\")\n  ],\n  sourceField: code,\n  lookupField: code\n| summarize count = count(), by: {label}"
+    },
+    {
+      "type": "markdown",
+      "content": "## 4. O Comando `join`\n\nCruzar dois datasets (INNER, LEFT ou RIGHT join)."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 4: Error rate combinando dois datasets\nfetch logs, from: now() - 1h\n| filter loglevel == \"ERROR\"\n| summarize errors = count(), by: {dt.entity.service}\n\n| join [\n    fetch logs, from: now() - 1h\n    | summarize total = count(), by: {dt.entity.service}\n  ],\n  on: {dt.entity.service},\n  kind: left\n\n| fields\n    service = entityAttr(dt.entity.service, \"entity.name\"),\n    errors, total,\n    error_pct = round(errors / total * 100, 2)\n| sort error_pct, direction: \"descending\""
+    },
+    {
+      "type": "markdown",
+      "content": "## 5. O Comando `append`\n\nCombina registros de múltiplas fontes (UNION ALL)."
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 5: Timeline de erros + deploys\nfetch logs, from: now() - 7d\n| filter loglevel == \"ERROR\"\n| fields timestamp, type = \"LOG_ERROR\", desc = content\n\n| append [\n    fetch events, from: now() - 7d\n    | filter event.type == \"DEPLOYMENT\"\n    | fields timestamp, type = \"DEPLOY\", desc = event.name\n  ]\n\n| sort timestamp, direction: \"descending\"\n| limit 100"
+    },
+    {
+      "type": "markdown",
+      "content": "## Pipeline Mestre — Tudo junto!\n\nCombinando `fetch` + `summarize` + `lookup` + `fields`"
+    },
+    {
+      "type": "dql",
+      "content": "// Exemplo 6: Service Health Dashboard (última 1 hora)\nfetch logs, from: now() - 1h\n| filter isNotNull(dt.entity.service)\n| summarize \n    total = count(), \n    errors = countIf(loglevel == \"ERROR\"),\n    by: {service_id = dt.entity.service}\n\n| lookup [\n    fetch dt.entity.service \n    | fields entity.id, entity.name, lifecycleState\n  ],\n  sourceField: service_id, \n  lookupField: entity.id\n\n| filter isNotNull(entity.name)\n| fields \n    service_name = entity.name, \n    lifecycleState, \n    total, \n    errors,\n    error_rate = round(errors / total * 100, 2),\n    health = if(errors/total > 0.05, \"CRITICAL\",\n             if(errors/total > 0.01, \"DEGRADED\", \"HEALTHY\"))\n| sort error_rate, direction: \"descending\""
+    },
+    {
+      "type": "markdown",
+      "content": "## 📊 Desafio Avançado\n\nCrie uma query que:\n1. Busque logs das últimas 4 horas\n2. Filtre apenas ERROR\n3. Agregue por serviço (contando erros)\n4. Use `lookup` para resolver nomes de serviço\n5. Ordene por número de erros (descendente)"
+    },
+    {
+      "type": "dql",
+      "content": "// ← Escreva sua query avançada aqui!\n// Dica: Use fetch + filter + summarize + lookup + sort"
+    },
+    {
+      "type": "markdown",
+      "content": "## Resumo Final\n\n| Comando | Quando usar |\n|---------|-------------|\n| `entityAttr` | 1-2 atributos, inline |\n| `lookup` | Múltiplos atributos |\n| `join` | Cruzar 2 datasets |\n| `data` | Tabela de referência |\n| `append` | Combinar fontes diferentes |"
+    },
+    {
+      "type": "markdown",
+      "content": "## Parabéns! 🎉\n\nVocê dominou:\n- ✅ **DQL 100:** Fetch, filter, filterOut, timeseries\n- ✅ **DQL 200:** Summarize, makeTimeseries, fields, parse\n- ✅ **DQL 300:** EntityAttr, lookup, join, append\n\n**Próximas etapas:** Explorar casos de uso específicos do seu ambiente!"
+    }
+  ]
+}
